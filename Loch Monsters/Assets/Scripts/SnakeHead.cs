@@ -37,8 +37,8 @@ public class SnakeHead : MonoBehaviour
         Vector2 der = (Vector2)(mousePosition - transform.position);
 
         
-        Debug.Log("transform.rotation.eulerAngles" + transform.rotation.eulerAngles + "der" + der);
-        Debug.Log("Introplated ANgle"+Vector2.Lerp(transform.rotation.eulerAngles, der, Time.deltaTime));
+        //Debug.Log("transform.rotation.eulerAngles" + transform.rotation.eulerAngles + "der" + der);
+        //Debug.Log("Introplated ANgle"+Vector2.Lerp(transform.rotation.eulerAngles, der, Time.deltaTime));
         
         if(der.magnitude > 1f)
         {
