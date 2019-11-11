@@ -29,6 +29,8 @@ public class SnakeHead : MonoBehaviour
     // Move the segment foward
     void FixedUpdate()
     {
+        NetworkManagerScript.instance.SendPosUpdate(transform.position, transform.right);
+
         Vector2 positionOnScreen = Camera.main.WorldToViewportPoint(transform.position);
 
         //Get the Screen position of the mouse
