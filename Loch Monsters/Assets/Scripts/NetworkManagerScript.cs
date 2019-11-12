@@ -12,8 +12,10 @@ public class NetworkManagerScript : MonoBehaviour
     //Make it a singleton
     public static NetworkManagerScript instance;
 
+    int id;
     //Server Connection Info
     const string serverIP = "127.0.0.1";
+    string playerName;
     const int port = 5555;
 
     //My Sockets
@@ -22,6 +24,7 @@ public class NetworkManagerScript : MonoBehaviour
 
     public void Awake()
     {
+
         if (instance != null)
         {
             Destroy(this);
@@ -30,14 +33,14 @@ public class NetworkManagerScript : MonoBehaviour
         {
             instance = this;
         }
-
-        EstablishConnection("AAAA");
+        DontDestroyOnLoad(this.gameObject);
 
     }
 
 
     public void EstablishConnection(string name)
     {
+        playerName = name;
         ConnectMessage message = new ConnectMessage(new Color(.9f, .8f, .7f), name);
 
         Debug.Log("Can I even see output?");
@@ -55,14 +58,38 @@ public class NetworkManagerScript : MonoBehaviour
 
             //URG, this shit still not working!
             //---read back the text---
-            byte[] bytes = new byte[512];
-            // Loop to receive all the data sent by the Server.
+            byte[] type = new byte[2];
+            
             var sb = new StringBuilder();
             
-            var reply = tcpStream.Read(bytes, 0, bytes.Length);
-            string converted = Encoding.UTF8.GetString(bytes, 0, bytes.Length);
-           
+            var reply = tcpStream.Read(type, 0, type.Length);
+            char typeChar = BitConverter.ToChar(type, 0);
+
+            Debug.Log((int)typeChar);
+
+            if(typeChar == 'c')
+            {
+                byte[] num = new byte[4];
+                tcpStream.Read(num, 0, num.Length);
+                Debug.Log("Got Connection Message");
+                int idNum = BitConverter.ToInt32(num, 0);
+                Debug.Log("Id " + idNum);
+                id = idNum;
+
+                tcpStream.Read(num, 0, num.Length);
+                double xPos = BitConverter.ToInt32(num, 0);
+                Debug.Log("X pos " + xPos);
+
+                
+                tcpStream.Read(num, 0, num.Length);
+                float yPos = BitConverter.ToInt32(num, 0);
+                Debug.Log("Y pos " + yPos);
+
+            }
             
+           // string converted = Encoding.UTF8.GetString(bytes, 0, bytes.Length);
+           // Debug.Log(converted);
+
         }
         catch (Exception e)
         {
@@ -91,13 +118,11 @@ public class NetworkManagerScript : MonoBehaviour
 
     public void SendPosUpdate(Vector2 pos, Vector2 rotation)
     {
-        string name = "AAAA";
         UTF8Encoding utfEncoding = new UTF8Encoding();
         //name = name.PadRight(32, ' ');
         List<byte> packet = new List<byte>();
         packet.AddRange(BitConverter.GetBytes('p'));
-        packet.AddRange(BitConverter.GetBytes((short)name.Length));
-        packet.AddRange(utfEncoding.GetBytes(name));
+        packet.AddRange(BitConverter.GetBytes(id));
         packet.AddRange(BitConverter.GetBytes(pos.x));
         packet.AddRange(BitConverter.GetBytes(pos.y));
         packet.AddRange(BitConverter.GetBytes(rotation.x));

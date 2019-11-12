@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class StartScreenUI : MonoBehaviour
 {
@@ -20,6 +21,7 @@ public class StartScreenUI : MonoBehaviour
         string name = nameField.text;
         Debug.Log(name);
         net.EstablishConnection(name);
+        SceneManager.LoadScene("Game");
         
     }
 }
