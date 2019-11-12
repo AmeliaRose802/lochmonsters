@@ -77,14 +77,17 @@ public class NetworkManagerScript : MonoBehaviour
                 id = idNum;
 
                 tcpStream.Read(num, 0, num.Length);
-                double xPos = BitConverter.ToInt32(num, 0);
+                int xPos = BitConverter.ToInt32(num, 0);
                 Debug.Log("X pos " + xPos);
 
                 
                 tcpStream.Read(num, 0, num.Length);
-                float yPos = BitConverter.ToInt32(num, 0);
+                int yPos = BitConverter.ToInt32(num, 0);
                 Debug.Log("Y pos " + yPos);
 
+                //This is bad but I don't know what else to do
+                PlayerPrefs.SetInt("playerX", xPos);
+                PlayerPrefs.SetInt("playerY", yPos);
             }
             
            // string converted = Encoding.UTF8.GetString(bytes, 0, bytes.Length);

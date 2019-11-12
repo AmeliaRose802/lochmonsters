@@ -23,5 +23,7 @@ public class StartScreenUI : MonoBehaviour
         net.EstablishConnection(name);
         SceneManager.LoadScene("Game");
         
+        
+        
     }
 }

@@ -45,10 +45,15 @@ PrefabInstance:
       propertyPath: m_Name
       value: Body (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 3576447691797399742, guid: 010a38c78c4f2be45ab717ecc0c698e0,
+        type: 3}
+      propertyPath: m_TagString
+      value: Player
+      objectReference: {fileID: 0}
     - target: {fileID: 3576447691797399737, guid: 010a38c78c4f2be45ab717ecc0c698e0,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 4.53
+      value: -2.13
       objectReference: {fileID: 0}
     - target: {fileID: 3576447691797399737, guid: 010a38c78c4f2be45ab717ecc0c698e0,
         type: 3}
@@ -100,6 +105,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 388291165273996662, guid: 010a38c78c4f2be45ab717ecc0c698e0,
+        type: 3}
+      propertyPath: m_IsTrigger
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 010a38c78c4f2be45ab717ecc0c698e0, type: 3}
 --- !u!1 &3197625473255101055 stripped
@@ -126,10 +136,15 @@ PrefabInstance:
       propertyPath: m_Name
       value: Body
       objectReference: {fileID: 0}
+    - target: {fileID: 3576447691797399742, guid: 010a38c78c4f2be45ab717ecc0c698e0,
+        type: 3}
+      propertyPath: m_TagString
+      value: Player
+      objectReference: {fileID: 0}
     - target: {fileID: 3576447691797399737, guid: 010a38c78c4f2be45ab717ecc0c698e0,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 4.53
+      value: -1.08
       objectReference: {fileID: 0}
     - target: {fileID: 3576447691797399737, guid: 010a38c78c4f2be45ab717ecc0c698e0,
         type: 3}
@@ -180,6 +195,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 388291165273996662, guid: 010a38c78c4f2be45ab717ecc0c698e0,
+        type: 3}
+      propertyPath: m_IsTrigger
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 010a38c78c4f2be45ab717ecc0c698e0, type: 3}
@@ -207,6 +227,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Head
       objectReference: {fileID: 0}
+    - target: {fileID: 6693832472475940910, guid: 4ee3b4eac37ade04897d28cc075f782b,
+        type: 3}
+      propertyPath: m_TagString
+      value: Player
+      objectReference: {fileID: 0}
     - target: {fileID: 6693832472475940909, guid: 4ee3b4eac37ade04897d28cc075f782b,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -264,6 +289,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6693832472475940908, guid: 4ee3b4eac37ade04897d28cc075f782b,
         type: 3}
+      propertyPath: speed
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 6693832472475940908, guid: 4ee3b4eac37ade04897d28cc075f782b,
+        type: 3}
       propertyPath: segments.Array.data[0]
       value: 
       objectReference: {fileID: 285437101433482108}
@@ -272,6 +302,11 @@ PrefabInstance:
       propertyPath: segments.Array.data[1]
       value: 
       objectReference: {fileID: 3197625473255101055}
+    - target: {fileID: 688730220359121483, guid: 4ee3b4eac37ade04897d28cc075f782b,
+        type: 3}
+      propertyPath: m_IsTrigger
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4ee3b4eac37ade04897d28cc075f782b, type: 3}
 --- !u!4 &63942890177359723 stripped
