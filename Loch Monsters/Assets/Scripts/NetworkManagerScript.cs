@@ -31,7 +31,7 @@ public class NetworkManagerScript : MonoBehaviour
             instance = this;
         }
 
-        EstablishConnection("A");
+        EstablishConnection("AAAA");
 
     }
 
@@ -53,18 +53,16 @@ public class NetworkManagerScript : MonoBehaviour
             Debug.Log("Data sent");
             EstablishUDPConnection();
 
+            //URG, this shit still not working!
             //---read back the text---
-            var bytes = new byte[512];
+            byte[] bytes = new byte[512];
             // Loop to receive all the data sent by the Server.
             var sb = new StringBuilder();
-            do
-            {
-                var i = tcpStream.Read(bytes, 0, bytes.Length);
-                sb.AppendFormat("{0}", Encoding.ASCII.GetString(bytes, 0, i));
-                Debug.Log(sb.ToString());
-            } while (tcpStream.DataAvailable);
-
-
+            
+            var reply = tcpStream.Read(bytes, 0, bytes.Length);
+            string converted = Encoding.UTF8.GetString(bytes, 0, bytes.Length);
+           
+            
         }
         catch (Exception e)
         {

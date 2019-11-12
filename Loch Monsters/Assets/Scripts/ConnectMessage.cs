@@ -19,7 +19,7 @@ public class ConnectMessage
 
     public ConnectMessage(Color color, string playerName)
     {
-        playerName = playerName.PadRight(39, ' ');
+        playerName = playerName.PadRight(32, ' ');
 
 
         Debug.Log(playerName);
