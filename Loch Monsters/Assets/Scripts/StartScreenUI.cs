@@ -19,7 +19,6 @@ public class StartScreenUI : MonoBehaviour
     public void StartClicked()
     {
         string name = nameField.text;
-        Debug.Log(name);
         net.EstablishConnection(name);
         SceneManager.LoadScene("Game");
         

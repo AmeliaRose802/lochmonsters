@@ -20,11 +20,7 @@ public class ConnectMessage
     public ConnectMessage(Color color, string playerName)
     {
         playerName = playerName.PadRight(32, ' ');
-
-
-        Debug.Log(playerName);
-
-
+   
         UTF8Encoding utfEncoding = new UTF8Encoding();
         colorR = BitConverter.GetBytes((short)(color.r * 255)); //Floats have been acting funky so I'm sending them as shorts instead
         colorG = BitConverter.GetBytes((short)(color.g * 255));

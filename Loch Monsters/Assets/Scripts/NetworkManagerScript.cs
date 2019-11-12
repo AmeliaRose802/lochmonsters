@@ -43,7 +43,6 @@ public class NetworkManagerScript : MonoBehaviour
         playerName = name;
         ConnectMessage message = new ConnectMessage(new Color(.9f, .8f, .7f), name);
 
-        Debug.Log("Can I even see output?");
         try
         {
             tcpClient = new TcpClient();
@@ -65,8 +64,6 @@ public class NetworkManagerScript : MonoBehaviour
             var reply = tcpStream.Read(type, 0, type.Length);
             char typeChar = BitConverter.ToChar(type, 0);
 
-            Debug.Log((int)typeChar);
-
             if(typeChar == 'c')
             {
                 byte[] num = new byte[4];
@@ -78,20 +75,66 @@ public class NetworkManagerScript : MonoBehaviour
 
                 tcpStream.Read(num, 0, num.Length);
                 int xPos = BitConverter.ToInt32(num, 0);
-                Debug.Log("X pos " + xPos);
 
                 
                 tcpStream.Read(num, 0, num.Length);
                 int yPos = BitConverter.ToInt32(num, 0);
-                Debug.Log("Y pos " + yPos);
 
                 //This is bad but I don't know what else to do
                 PlayerPrefs.SetInt("playerX", xPos);
                 PlayerPrefs.SetInt("playerY", yPos);
             }
-            
-           // string converted = Encoding.UTF8.GetString(bytes, 0, bytes.Length);
-           // Debug.Log(converted);
+
+            tcpStream.Read(type, 0, type.Length);
+            typeChar = BitConverter.ToChar(type, 0);
+            Debug.Log("Type Char "+ typeChar);
+
+            if(typeChar == 'o')
+            {
+                Debug.Log("Getting other snakes data");
+                byte[] num = new byte[2];
+                tcpStream.Read(num, 0, num.Length);
+                short numClients = BitConverter.ToInt16(num,0);
+                Debug.Log("Num of other clients " + numClients);
+
+                byte[] otherSnake = new byte[60];
+                for(int i = 0; i < numClients; i++)
+                {
+                    tcpStream.Read(otherSnake, 0, otherSnake.Length);
+                    int index = 0;
+                    int snakeID = BitConverter.ToInt32(otherSnake, index);
+                    index += 4;
+                    byte[] nameBuffer = new List<Byte>(otherSnake).GetRange(index, 32).ToArray();
+
+                    string snakeName = System.Text.Encoding.UTF8.GetString(nameBuffer).Trim();
+                    index += 32;
+
+                    short snakeLength = BitConverter.ToInt16(otherSnake, index);
+                    index += 2;
+                    short colorR = BitConverter.ToInt16(otherSnake, index);
+                    index += 2;
+                    short colorG = BitConverter.ToInt16(otherSnake, index);
+                    index += 2;
+                    short colorB = BitConverter.ToInt16(otherSnake, index);
+                    index += 2;
+
+                    float xPos = BitConverter.ToSingle(otherSnake, index);
+                    index += 4;
+                    float yPos = BitConverter.ToSingle(otherSnake, index);
+                    index += 4;
+                    float xDir = BitConverter.ToSingle(otherSnake, index);
+                    index += 4;
+                    float yDir = BitConverter.ToSingle(otherSnake, index);
+
+                    Debug.Log("Other ID: " + snakeID+ "Name "+snakeName);
+                    Debug.Log("Length " + snakeLength + " r " + colorR + " g " + colorG + " b " + colorB+"x pos"+xPos+" y pos "+yPos+" x dir"+xDir + " y dir" + yDir);
+                }
+
+            }
+
+
+            // string converted = Encoding.UTF8.GetString(bytes, 0, bytes.Length);
+            // Debug.Log(converted);
 
         }
         catch (Exception e)
