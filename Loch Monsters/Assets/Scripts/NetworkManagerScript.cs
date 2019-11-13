@@ -7,6 +7,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 
+
 public class NetworkManagerScript : MonoBehaviour
 {
     //Make it a singleton
@@ -22,6 +23,8 @@ public class NetworkManagerScript : MonoBehaviour
     TcpClient tcpClient;
     UdpClient udpClient; //TODO
 
+    
+
     public void Awake()
     {
 
@@ -34,7 +37,7 @@ public class NetworkManagerScript : MonoBehaviour
             instance = this;
         }
         DontDestroyOnLoad(this.gameObject);
-
+        
     }
 
 
@@ -68,9 +71,7 @@ public class NetworkManagerScript : MonoBehaviour
             {
                 byte[] num = new byte[4];
                 tcpStream.Read(num, 0, num.Length);
-                Debug.Log("Got Connection Message");
                 int idNum = BitConverter.ToInt32(num, 0);
-                Debug.Log("Id " + idNum);
                 id = idNum;
 
                 tcpStream.Read(num, 0, num.Length);
@@ -87,15 +88,12 @@ public class NetworkManagerScript : MonoBehaviour
 
             tcpStream.Read(type, 0, type.Length);
             typeChar = BitConverter.ToChar(type, 0);
-            Debug.Log("Type Char "+ typeChar);
 
             if(typeChar == 'o')
             {
-                Debug.Log("Getting other snakes data");
                 byte[] num = new byte[2];
                 tcpStream.Read(num, 0, num.Length);
                 short numClients = BitConverter.ToInt16(num,0);
-                Debug.Log("Num of other clients " + numClients);
 
                 byte[] otherSnake = new byte[60];
                 for(int i = 0; i < numClients; i++)
@@ -103,6 +101,8 @@ public class NetworkManagerScript : MonoBehaviour
                     tcpStream.Read(otherSnake, 0, otherSnake.Length);
                     int index = 0;
                     int snakeID = BitConverter.ToInt32(otherSnake, index);
+                    
+
                     index += 4;
                     byte[] nameBuffer = new List<Byte>(otherSnake).GetRange(index, 32).ToArray();
 
@@ -128,14 +128,13 @@ public class NetworkManagerScript : MonoBehaviour
 
                     Debug.Log("Other ID: " + snakeID+ "Name "+snakeName);
                     Debug.Log("Length " + snakeLength + " r " + colorR + " g " + colorG + " b " + colorB+"x pos"+xPos+" y pos "+yPos+" x dir"+xDir + " y dir" + yDir);
+
+                    Color snakeColor = new Color(((float)colorR / 255f), ((float)colorG / 255f), ((float)colorB / 255f));
+                    Vector2 pos = new Vector2(xPos, yPos);
+                    Vector2 dir = new Vector2(xPos, yPos);
+                    GameManager.instance.snakes.Add(snakeID, new Snake(snakeID, snakeName, snakeLength, snakeColor, pos, dir));
                 }
-
             }
-
-
-            // string converted = Encoding.UTF8.GetString(bytes, 0, bytes.Length);
-            // Debug.Log(converted);
-
         }
         catch (Exception e)
         {
