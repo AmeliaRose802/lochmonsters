@@ -6,6 +6,7 @@ TagManager:
   tags:
   - otherPlayer
   - food
+  - wall
   layers:
   - Default
   - TransparentFX
