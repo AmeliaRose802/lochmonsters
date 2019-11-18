@@ -8,7 +8,8 @@ public class SnakeHead : MonoBehaviour
     public float speed = 5;
     public float dist = 1;
 
-    Vector3 dir = new Vector3(0, 0, 0);
+
+    Vector3 lastDir = new Vector3(0, 0, 0);
     Rigidbody2D rb;
 
     public List<GameObject> segments;
@@ -21,22 +22,23 @@ public class SnakeHead : MonoBehaviour
         
     }
 
-    private void Update()
-    {
-        //dir.x = Input.GetAxis("Horizontal");
-        //dir.z = Input.GetAxis("Vertical");
-    }
     // Move the segment foward
     void FixedUpdate()
     {
-        NetworkManagerScript.instance.SendPosUpdate(transform.position, transform.right);
+        //Only send update if direction has changed, may want to send at a fixed interval as a keep alive message too
+        if(transform.up != lastDir)
+        {
+            NetworkManagerScript.instance.SendPosUpdate(transform.position, transform.right);
+        }
+       
+        lastDir = transform.up;
 
         Vector2 positionOnScreen = Camera.main.WorldToViewportPoint(transform.position);
 
         //Get the Screen position of the mouse
         Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         
-        Vector2 der = (Vector2)(mousePosition - transform.position);
+        Vector2 der = (mousePosition - transform.position);
 
         
         //Debug.Log("transform.rotation.eulerAngles" + transform.rotation.eulerAngles + "der" + der);

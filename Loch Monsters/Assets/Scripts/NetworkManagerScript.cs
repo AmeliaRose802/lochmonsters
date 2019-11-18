@@ -6,7 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-
+using System.Threading.Tasks;
 
 public class NetworkManagerScript : MonoBehaviour
 {
@@ -40,8 +40,31 @@ public class NetworkManagerScript : MonoBehaviour
         
     }
 
+    //Adapted from: https://www.gamedev.net/forums/topic/433854-simple-c-udp-nonblocking/
+    void ReceveUDP(IAsyncResult res)
+    {
+        IPEndPoint remote = new IPEndPoint(IPAddress.Any, 0);
+        byte[] data = udpClient.EndReceive(res, ref remote);
 
-   
+        char type = BitConverter.ToChar(data, 0);
+
+        switch (type)
+        {
+            case 'u':
+                PositionUpdate p = new PositionUpdate(data);
+                break;
+            default:
+                Debug.Log("Unknown message receved");
+                break;
+        }
+
+
+        // get next packet
+        udpClient.BeginReceive(ReceveUDP, null);
+
+    }
+
+
 
 
     public void SendPosUpdate(Vector2 pos, Vector2 rotation)
@@ -49,6 +72,8 @@ public class NetworkManagerScript : MonoBehaviour
         PositionUpdate posUpdate = new PositionUpdate(id, pos, rotation);
         posUpdate.Send(udpClient);
     }
+
+    
 
 
     /*
@@ -87,6 +112,7 @@ public class NetworkManagerScript : MonoBehaviour
                 tcpStream.Read(num, 0, num.Length);
                 int idNum = BitConverter.ToInt32(num, 0);
                 id = idNum;
+                GameManager.instance.myID = idNum; //This is such a MESS, just shoot me!
 
                 tcpStream.Read(num, 0, num.Length);
                 int xPos = BitConverter.ToInt32(num, 0);
@@ -131,6 +157,7 @@ public class NetworkManagerScript : MonoBehaviour
             //Initalize UDP client
             udpClient = new UdpClient();
             udpClient.Connect(serverIP, port);
+            udpClient.BeginReceive(new AsyncCallback(ReceveUDP), null);
 
         }
         catch (Exception e)
