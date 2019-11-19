@@ -7,6 +7,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 public class NetworkManagerScript : MonoBehaviour
 {
@@ -23,7 +24,8 @@ public class NetworkManagerScript : MonoBehaviour
     TcpClient tcpClient;
     UdpClient udpClient; //TODO
 
-    
+    public long gameTime = 0;
+    public bool isGameStarted = false;
 
     public void Awake()
     {
@@ -40,6 +42,14 @@ public class NetworkManagerScript : MonoBehaviour
         
     }
 
+    private void Update()
+    {
+        if (isGameStarted)
+        {
+            gameTime += (long)(Time.deltaTime * 1000);
+        }
+    }
+
     //Adapted from: https://www.gamedev.net/forums/topic/433854-simple-c-udp-nonblocking/
     void ReceveUDP(IAsyncResult res)
     {
@@ -54,7 +64,7 @@ public class NetworkManagerScript : MonoBehaviour
                 PositionUpdate p = new PositionUpdate(data);
                 break;
             default:
-                Debug.Log("Unknown message receved");
+                UnityEngine.Debug.Log("Unknown message receved");
                 break;
         }
 
@@ -64,6 +74,7 @@ public class NetworkManagerScript : MonoBehaviour
 
     }
 
+    
 
 
 
@@ -95,6 +106,9 @@ public class NetworkManagerScript : MonoBehaviour
 
             NetworkStream tcpStream = tcpClient.GetStream();
 
+            Stopwatch stopWatch = new Stopwatch();
+            stopWatch.Start();
+
             //Sending the connection message 
             message.Send(tcpStream);
 
@@ -102,11 +116,16 @@ public class NetworkManagerScript : MonoBehaviour
             byte[] type = new byte[2];
 
             tcpStream.Read(type, 0, type.Length);
+            long latency = stopWatch.ElapsedMilliseconds;
+
+            UnityEngine.Debug.Log("Latency was " + latency);
+
             char typeChar = BitConverter.ToChar(type, 0);
 
             //Got connection response, process it
             if (typeChar == 'c')
             {
+
                 //This could be put in a seprate function but it is only happening once and I don't think it would contrubute to readibility much
                 byte[] num = new byte[4];
                 tcpStream.Read(num, 0, num.Length);
@@ -121,6 +140,14 @@ public class NetworkManagerScript : MonoBehaviour
                 tcpStream.Read(num, 0, num.Length);
                 int yPos = BitConverter.ToInt32(num, 0);
 
+                byte[] timeStamp = new byte[8];
+                tcpStream.Read(timeStamp, 0, timeStamp.Length);
+                long time = BitConverter.ToInt64(timeStamp, 0);
+                UnityEngine.Debug.Log("Time stamp: "+time);
+                gameTime = time + latency;
+                UnityEngine.Debug.Log("Game Time: " + gameTime);
+                isGameStarted = true;
+
                 //This is bad but I don't know what else to do
                 PlayerPrefs.SetInt("playerX", xPos);
                 PlayerPrefs.SetInt("playerY", yPos);
@@ -128,15 +155,19 @@ public class NetworkManagerScript : MonoBehaviour
             else
             {
                 throw new Exception("Message other then connection reply receved"); //TODO: Probley should be some way to recover from this
+
             }
 
             //Read in the next message
-            tcpStream.Read(type, 0, type.Length);
+            var numRead = tcpStream.Read(type, 0, type.Length);
             typeChar = BitConverter.ToChar(type, 0);
 
+
+            UnityEngine.Debug.Log("Typechar "+ typeChar);
             //Check if this is the message containing data for all other monsters in the game
             if (typeChar == 'o')
             {
+                UnityEngine.Debug.Log("Got list of other clients");
                 //Get number of other snakes in the game
                 byte[] num = new byte[2];
                 tcpStream.Read(num, 0, num.Length);
@@ -162,8 +193,8 @@ public class NetworkManagerScript : MonoBehaviour
         }
         catch (Exception e)
         {
-            Debug.Log("ERROR");
-            Debug.Log(e.ToString());
+            UnityEngine.Debug.Log("ERROR");
+            UnityEngine.Debug.Log(e.ToString());
         }
     }
 

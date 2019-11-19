@@ -20,7 +20,9 @@ public class StartScreenUI : MonoBehaviour
     {
         string name = nameField.text;
         net.EstablishConnection(name);
-        SceneManager.LoadScene("Game");
-       
+        if (NetworkManagerScript.instance.isGameStarted)
+        {
+            SceneManager.LoadScene("Game");
+        }
     }
 }
