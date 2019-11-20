@@ -47,31 +47,41 @@ public class NetworkManagerScript : MonoBehaviour
         if (isGameStarted)
         {
             gameTime += (long)(Time.deltaTime * 1000);
+            ReceveUDP();
         }
     }
 
     //Adapted from: https://www.gamedev.net/forums/topic/433854-simple-c-udp-nonblocking/
-    void ReceveUDP(IAsyncResult res)
+    void ReceveUDP()
     {
-        IPEndPoint remote = new IPEndPoint(IPAddress.Any, 0);
-        byte[] data = udpClient.EndReceive(res, ref remote);
+        UnityEngine.Debug.Log("Got UDP Message");
+        //byte[] data = udpClient.EndReceive(res, ref remote);
+        udpClient.Client.Blocking = false;
 
-        char type = BitConverter.ToChar(data, 0);
-
-        switch (type)
+        if (udpClient.Client.Available > 0)
         {
-            case 'u':
-                PositionUpdate p = new PositionUpdate(data);
-                break;
-            default:
-                UnityEngine.Debug.Log("Unknown message receved");
-                break;
+            IPEndPoint remote = new IPEndPoint(IPAddress.Any, 0);
+            var data = udpClient.Receive(ref remote);
+            if (data.Length != 0)
+            {
+                char type = BitConverter.ToChar(data, 0);
+
+                switch (type)
+                {
+                    case 'u':
+                        PositionUpdate p = new PositionUpdate(data);
+                        SnakeManager.instance.UpdateSnakePosition(p);
+                        break;
+                    default:
+                        UnityEngine.Debug.Log("Unknown message receved");
+                        break;
+                }
+            }
         }
+       
 
 
-        // get next packet
-        udpClient.BeginReceive(ReceveUDP, null);
-
+        //udpClient.BeginReceive(new AsyncCallback(ReceveUDP), null);
     }
 
     
@@ -125,7 +135,7 @@ public class NetworkManagerScript : MonoBehaviour
             //Got connection response, process it
             if (typeChar == 'c')
             {
-
+                print("Got connection response");
                 //This could be put in a seprate function but it is only happening once and I don't think it would contrubute to readibility much
                 byte[] num = new byte[4];
                 tcpStream.Read(num, 0, num.Length);
@@ -145,6 +155,7 @@ public class NetworkManagerScript : MonoBehaviour
                 long time = BitConverter.ToInt64(timeStamp, 0);
                 UnityEngine.Debug.Log("Time stamp: "+time);
                 gameTime = time + latency;
+
                 UnityEngine.Debug.Log("Game Time: " + gameTime);
                 isGameStarted = true;
 
@@ -167,12 +178,14 @@ public class NetworkManagerScript : MonoBehaviour
             //Check if this is the message containing data for all other monsters in the game
             if (typeChar == 'o')
             {
+                print("Got list of other snakes");
                 UnityEngine.Debug.Log("Got list of other clients");
                 //Get number of other snakes in the game
                 byte[] num = new byte[2];
                 tcpStream.Read(num, 0, num.Length);
                 short numClients = BitConverter.ToInt16(num, 0);
 
+                print("Num other clients " + numClients);
                 //Each other snake requires 60 bytes to store its data
                 byte[] otherSnake = new byte[60];
 
@@ -188,7 +201,7 @@ public class NetworkManagerScript : MonoBehaviour
             //Initalize UDP client
             udpClient = new UdpClient();
             udpClient.Connect(serverIP, port);
-            udpClient.BeginReceive(new AsyncCallback(ReceveUDP), null);
+            //udpClient.BeginReceive(new AsyncCallback(ReceveUDP), null);
 
         }
         catch (Exception e)
