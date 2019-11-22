@@ -24,7 +24,6 @@ public class SnakeManager : MonoBehaviour, IMessageListener
 
     public void Receive(IMessage message)
     {
-        Debug.Log(message.GetMessageType());
         
         switch (message.GetMessageType())
         {
@@ -32,7 +31,6 @@ public class SnakeManager : MonoBehaviour, IMessageListener
                 SetPlayerPos((SetPlayerPosition)message);
                 break;
             case MessageType.SPAWN_NON_PLAYER_SNAKE:
-                print("Spawn a non player snake");
                 SpawnSnake(((SpawnSnake)message).snake);
                 break;
 

@@ -23,6 +23,14 @@ public class UDPManager: MonoBehaviour, IMessageListener
         GameManager.instance.messageSystem.Subscribe(MessageType.UPDATE_POSITION, this);
     }
 
+    void OnApplicationQuit()
+    {
+        if (GameManager.instance.gameRunning)
+        {
+            udpClient.Close();
+        }
+        
+    }
 
     private void Update()
     {

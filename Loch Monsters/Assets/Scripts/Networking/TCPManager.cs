@@ -17,6 +17,20 @@ public class TCPManager : MonoBehaviour
         //Make and connect the TCP client
         tcpClient = new TcpClient();
     }
+
+    void OnApplicationQuit()
+    {
+        try
+        {
+            tcpClient.GetStream().Write(BitConverter.GetBytes('e'), 0, 2);
+            tcpClient.Close();
+        }
+        catch (InvalidOperationException e)
+        { }
+
+
+    }
+
     /*
      * Sets up a connection to the server 
      * Sends connection message with name and color, receves back starting position 
