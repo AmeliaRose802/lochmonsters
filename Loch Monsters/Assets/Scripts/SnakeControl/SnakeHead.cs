@@ -19,7 +19,6 @@ public class SnakeHead : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         rb.velocity = transform.up * speed;
-
     }
 
     // Move the segment foward

@@ -113,21 +113,24 @@ public class SnakeManager : MonoBehaviour, IMessageListener
 
         if (ValidateNPID(id) && CheckUpToDate(id, pos.getTimestamp()))
         {
-
-            Debug.Log("new pos = " + pos.getPos() + " " + pos.getDir());
-
-            
             /*
             float elapsedTime = Math.Abs(GameManager.instance.gameTime - pos.getTimestamp());
 
             var expected = ClampToRange(pos.getPos() + (pos.getDir() * 4 * elapsedTime / 1000), new Vector2(25f, 25f));
             */
 
-            Debug.Log("Current position"+npHeads[id].position+" New position: " + pos.getPos() + " diff " + (pos.getPos() - new Vector2(npHeads[id].position.x, npHeads[id].position.y)));
+            /*
+            var diff = pos.getPos() - new Vector2(npHeads[id].position.x, npHeads[id].position.y);
+            if(diff.sqrMagnitude > 5)
+            {
+                Debug.Log("Weirdly large diffrence between current and predicted ");
+                Debug.Log("Current position" + npHeads[id].position + " New position: " + pos.getPos() + " diff " + diff);
+                return;
+            }*/
+            
 
 
             lastUpdateTimes[id] = pos.getTimestamp();
-
             
             npHeads[id].position = pos.getPos();
             npHeads[id].up = pos.getDir();

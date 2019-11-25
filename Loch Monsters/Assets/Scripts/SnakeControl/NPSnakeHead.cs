@@ -24,7 +24,7 @@ public class NPSnakeHead : MonoBehaviour
     void FixedUpdate()
     {
 
-        //rb.velocity = transform.up * speed;
+        rb.velocity = transform.up * speed;
 
         //Thanks to https://www.reddit.com/r/Unity2D/comments/7hwxfk/how_do_i_make_a_tail_like_a_snake/ for this code
         for (int i = 0; i < segments.Count; i++)

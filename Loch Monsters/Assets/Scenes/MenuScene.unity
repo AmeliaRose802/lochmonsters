@@ -335,6 +335,7 @@ GameObject:
   m_Component:
   - component: {fileID: 302110664}
   - component: {fileID: 302110663}
+  - component: {fileID: 302110666}
   - component: {fileID: 302110665}
   m_Layer: 0
   m_Name: GameManager
@@ -359,6 +360,7 @@ MonoBehaviour:
   networkManager: {fileID: 0}
   id: 0
   gameTime: 0
+  startTime: 0
   gameRunning: 0
   updateClock: 0
   playerColor: {r: 0.97200745, g: 0.427451, b: 1, a: 1}
@@ -389,6 +391,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8f2b0408124a91a4fa1c1c8bdd5aaf84, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &302110666
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 302110662}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c978e4cbd2ade1a41851007b6b69e58b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &497798532
@@ -834,7 +848,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.49019608, g: 0, b: 0.05785297, a: 0}
+  m_BackGroundColor: {r: 0.3815298, g: 0, b: 0.49019608, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0

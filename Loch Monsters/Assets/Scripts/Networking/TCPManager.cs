@@ -7,8 +7,11 @@ using UnityEngine;
 
 public class TCPManager : MonoBehaviour, IMessageListener
 {
+    const float CLOCK_SYNC_INTERVAL = 5;
     const int tcpPort = 5555;
     const string serverIP = "127.0.0.1";
+    long clockSyncSendTime = 0;
+    Stopwatch stopWatch;
 
     TcpClient tcpClient;
 
@@ -16,6 +19,8 @@ public class TCPManager : MonoBehaviour, IMessageListener
     {
         //Make and connect the TCP client
         tcpClient = new TcpClient();
+        stopWatch = new Stopwatch();
+        //StartCoroutine(SyncClock());
     }
 
     void OnApplicationQuit()
@@ -49,7 +54,6 @@ public class TCPManager : MonoBehaviour, IMessageListener
             if (data != 0)
             {
                 char type = BitConverter.ToChar(buffer, 0);
-                print("New tcp packet of type " + type);
 
                 //Trim off the part of the buffer containing the type so it is ready to be converted
                 var test = new List<Byte>(buffer);
@@ -60,6 +64,9 @@ public class TCPManager : MonoBehaviour, IMessageListener
                     case 'n':
                         SpawnSnake message = new SpawnSnake(buffer);
                         GameManager.instance.messageSystem.DispatchMessage(message);
+                        break;
+                    case 't':
+                        HandleClockSyncReply(buffer);
                         break;
                     default:
                         print("Unknown packet receved");
@@ -84,7 +91,7 @@ public class TCPManager : MonoBehaviour, IMessageListener
             var tcpStream = tcpClient.GetStream();
 
             //Time latency 
-            Stopwatch stopWatch = new Stopwatch();
+            
             
             //Sending the connection message 
             var msg = message.GetMessage();
@@ -97,6 +104,7 @@ public class TCPManager : MonoBehaviour, IMessageListener
 
             tcpStream.Read(type, 0, type.Length);
             long latency = stopWatch.ElapsedMilliseconds;
+            stopWatch.Reset();
 
             char typeChar = BitConverter.ToChar(type, 0);
 
@@ -164,8 +172,29 @@ public class TCPManager : MonoBehaviour, IMessageListener
         }
     }
 
-    void SyncClock()
+    IEnumerator SyncClock()
     {
+        
+        while (true)
+        {
+            yield return new WaitForSeconds(CLOCK_SYNC_INTERVAL);
 
+            if (GameManager.instance.gameRunning)
+            {
+                print("Time to send another clock sync message. Current time: "+GameManager.instance.gameTime);
+                ClockSyncMessage syncClock = new ClockSyncMessage();
+                tcpClient.GetStream().Write(syncClock.GetMessage(), 0, syncClock.GetMessage().Length);
+                stopWatch.Start(); //Start timing latency
+
+            }
+        }
+        
+    }
+
+    void HandleClockSyncReply(byte [] reply)
+    {
+        var clockSync = new ClockSyncMessage(reply, stopWatch.ElapsedMilliseconds);
+        clockSync.SetClock();
+        stopWatch.Reset();
     }
 }

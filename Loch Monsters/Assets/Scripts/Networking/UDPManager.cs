@@ -49,7 +49,7 @@ public class UDPManager: MonoBehaviour, IMessageListener
 
     void ReceveUDP()
     {
-        if (udpClient.Client.Available > 0)
+        while(udpClient.Client.Available > 0)
         {
             var data = udpClient.Receive(ref remote);
 

@@ -1,9 +1,9 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-
-
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour, IMessageListener
 {
@@ -17,6 +17,7 @@ public class GameManager : MonoBehaviour, IMessageListener
     public long startTime;
     public bool gameRunning = false;
     public bool updateClock = false;
+
     public Color playerColor; //TODO: Let player choose
     
     public MessageSystem messageSystem;
@@ -44,12 +45,15 @@ public class GameManager : MonoBehaviour, IMessageListener
     private void Start()
     {
         messageSystem.Subscribe(MessageType.START_GAME, this);
+        
+        
     }
     private void FixedUpdate()
     {
         if (updateClock)
         {
-            gameTime += (long)(Time.deltaTime * 1000);
+            long epoch = (long)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalMilliseconds;
+            gameTime = epoch - startTime;
         }
     }
 
@@ -77,7 +81,6 @@ public class GameManager : MonoBehaviour, IMessageListener
         yield return new WaitForFixedUpdate(); //Wait a fixed update cycle to make sure that all new objects can init
 
         messageSystem.DispatchMessage(new SetPlayerPosition(startMessage.startPos, startMessage.startDir));
-        
 
         foreach (var snake in startMessage.otherSnakes)
         {
