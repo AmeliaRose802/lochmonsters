@@ -13,8 +13,9 @@ public class SpawnSnake : IMessage
 
     public SpawnSnake(byte [] snake)
     {
-        throw new System.NotImplementedException();
+        this.snake = new SnakeData(snake);
     }
+
     public MessageType GetMessageType()
     {
         return MessageType.SPAWN_NON_PLAYER_SNAKE;

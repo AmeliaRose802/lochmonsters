@@ -25,9 +25,9 @@ public class NetworkManagerScript : MonoBehaviour
         
     }
 
-    public void EstablishConnection(string name)
+    public void EstablishConnection(string name, Color color)
     {
-        tcpManager.EstablishConnection(name);
+        tcpManager.EstablishConnection(name, color);
         udpManager.EstablishConnection();
     }
 }

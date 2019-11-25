@@ -28,6 +28,7 @@ public class SnakeHead : MonoBehaviour
         //Only send update if direction has changed, may want to send at a fixed interval as a keep alive message too
         if (transform.up != lastDir)
         {
+            //Sending heads derection and the parent objects derection
             var p = new PositionUpdate(GameManager.instance.id, transform.position, transform.up);
             GameManager.instance.networkManager.udpManager.SendUDPMessage(p);
         }

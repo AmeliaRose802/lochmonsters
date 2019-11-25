@@ -3,16 +3,21 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+
+
 public class GameManager : MonoBehaviour, IMessageListener
 {
+    public const int DEFAULT_LENGTH = 3;
     public static GameManager instance;
     public string playerName;
 
     public NetworkManagerScript networkManager;
     public int id;
     public long gameTime;
+    public long startTime;
     public bool gameRunning = false;
     public bool updateClock = false;
+    public Color playerColor; //TODO: Let player choose
     
     public MessageSystem messageSystem;
 
@@ -40,7 +45,7 @@ public class GameManager : MonoBehaviour, IMessageListener
     {
         messageSystem.Subscribe(MessageType.START_GAME, this);
     }
-    private void Update()
+    private void FixedUpdate()
     {
         if (updateClock)
         {
@@ -59,7 +64,7 @@ public class GameManager : MonoBehaviour, IMessageListener
 
     public void LaunchGame(string name)
     {
-        networkManager.EstablishConnection(name);
+        networkManager.EstablishConnection(name, playerColor);
     }
 
 
@@ -72,12 +77,15 @@ public class GameManager : MonoBehaviour, IMessageListener
         yield return new WaitForFixedUpdate(); //Wait a fixed update cycle to make sure that all new objects can init
 
         messageSystem.DispatchMessage(new SetPlayerPosition(startMessage.startPos, startMessage.startDir));
+        
 
         foreach (var snake in startMessage.otherSnakes)
         {
             SpawnSnake spawnMessage = new SpawnSnake(snake);
             messageSystem.DispatchMessage(spawnMessage);
         }
+
+        gameRunning = true; //Now start doing all the game processes since things are inited
     }
 
 

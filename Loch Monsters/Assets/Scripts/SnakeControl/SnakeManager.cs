@@ -5,16 +5,30 @@ using UnityEngine;
 
 public class SnakeManager : MonoBehaviour, IMessageListener
 {
-    public GameObject player;
-    public GameObject nonPlayerSnakePrefab;
-    public GameObject nonPlayerBodySegment;
+    public GameObject playerHead;
+    public GameObject nonPlayerHead;
+    public GameObject bodySegment;
 
-    Dictionary<int, GameObject> npSnakes;
+    Dictionary<int, Transform> npHeads;
     Dictionary<int, long> lastUpdateTimes;
+
+    [HideInInspector]
+    public Transform playerHeadTranform;
+
+    public static SnakeManager instance;
 
     public void Awake()
     {
-        npSnakes = new Dictionary<int, GameObject>();
+        if(instance == null)
+        {
+            instance = this;
+        }
+        else
+        {
+            Destroy(this);
+        }
+
+        npHeads = new Dictionary<int, Transform>();
 
         GameManager.instance.messageSystem.Subscribe(MessageType.SET_PLAYER_POSITION, this);
         GameManager.instance.messageSystem.Subscribe(MessageType.SPAWN_NON_PLAYER_SNAKE, this);
@@ -43,31 +57,50 @@ public class SnakeManager : MonoBehaviour, IMessageListener
 
     void SpawnSnake(SnakeData snake)
     {
-        GameObject newSnake = Instantiate(nonPlayerSnakePrefab);
-        NPSnakeHead snakeHeadManager = newSnake.GetComponentInChildren<NPSnakeHead>();
+        Debug.Log("Got message to spawn snake " + snake.name);
+
+        GameObject container = Instantiate(new GameObject());
+        container.name = "NonPlayerSnake";
+        GameObject newHead = Instantiate(nonPlayerHead, container.transform);
+        NPSnakeHead snakeHeadManager = newHead.GetComponent<NPSnakeHead>();
 
         //Set all nessary data for new snake
-        newSnake.transform.GetChild(0).GetComponent<SpriteRenderer>().color = snake.color;
-        newSnake.transform.position = snake.pos;
-        newSnake.transform.right = snake.dir;
+        newHead.transform.GetComponent<SpriteRenderer>().color = snake.color;
+        newHead.transform.position = snake.pos;
+        newHead.transform.up = snake.dir;
         
        
         //Spawn all body segments based on snake length
-        for(int i = 0; i< snake.length; i++)
+        for(int i = 0; i< snake.length - 1; i++)
         {
-            GameObject newSegment = Instantiate(nonPlayerBodySegment, newSnake.transform);
+            GameObject newSegment = Instantiate(bodySegment, container.transform);
             newSegment.GetComponent<SpriteRenderer>().color = snake.color;
             snakeHeadManager.segments.Add(newSegment);
         }
 
         //Add the new snake created to the list of snakes
-        npSnakes.Add(snake.id, newSnake);
+        npHeads.Add(snake.id, newHead.transform);
     }
 
     public void SetPlayerPos(SetPlayerPosition playerPosition)
     {
-        player.transform.position = playerPosition.pos;
-        player.transform.right = playerPosition.der;
+        
+        GameObject container = Instantiate(new GameObject());
+        container.name = "Player";
+        var head = Instantiate(playerHead, container.transform);
+        SnakeHead snakeHeadManager = head.GetComponent<SnakeHead>();
+
+        head.transform.position = playerPosition.pos;
+        head.transform.up = playerPosition.der;
+
+        for (int i = 0; i < GameManager.DEFAULT_LENGTH -1; i++)
+        {
+            GameObject newSegment = Instantiate(bodySegment, container.transform);
+            newSegment.GetComponent<SpriteRenderer>().color = GameManager.instance.playerColor;
+            snakeHeadManager.segments.Add(newSegment);
+        }
+
+        playerHeadTranform = head.transform;
     }
 
     /*
@@ -75,14 +108,29 @@ public class SnakeManager : MonoBehaviour, IMessageListener
      * */
     public void UpdateSnakePosition(PositionUpdate pos)
     {
+
         int id = pos.getID();
 
         if (ValidateNPID(id) && CheckUpToDate(id, pos.getTimestamp()))
         {
+
+            Debug.Log("new pos = " + pos.getPos() + " " + pos.getDir());
+
+            
+            /*
+            float elapsedTime = Math.Abs(GameManager.instance.gameTime - pos.getTimestamp());
+
+            var expected = ClampToRange(pos.getPos() + (pos.getDir() * 4 * elapsedTime / 1000), new Vector2(25f, 25f));
+            */
+
+            Debug.Log("Current position"+npHeads[id].position+" New position: " + pos.getPos() + " diff " + (pos.getPos() - new Vector2(npHeads[id].position.x, npHeads[id].position.y)));
+
+
             lastUpdateTimes[id] = pos.getTimestamp();
 
-            npSnakes[id].transform.position = pos.getPos();
-            npSnakes[id].transform.right = pos.getDir();
+            
+            npHeads[id].position = pos.getPos();
+            npHeads[id].up = pos.getDir();
         }
     }
 
@@ -103,11 +151,11 @@ public class SnakeManager : MonoBehaviour, IMessageListener
         bool isOk = false;
         try
         {
-            if (id != GameManager.instance.id)
+            if (id == GameManager.instance.id)
             {
                 throw new Exception("Got message about self");
             }
-            if (!npSnakes.ContainsKey(id))
+            if (!npHeads.ContainsKey(id))
             {
                 throw new KeyNotFoundException("Unknown snake");
             }
@@ -116,21 +164,39 @@ public class SnakeManager : MonoBehaviour, IMessageListener
         }
         catch (KeyNotFoundException e)
         {
+            Debug.Log("Snake with ID: " + id);
             print("ERROR " + e.ToString());
         }
         catch (Exception e)
         {
-            print("ERROR " + e.ToString());
+            //print("ERROR " + e.ToString());
         }
 
         return isOk;
     }
 
-    void SetSnakeColor(GameObject snake, Color color)
+    Vector2 ClampToRange(Vector2 val, Vector2 range)
     {
-        foreach (Transform child in snake.transform)
+        Vector2 clamped = val;
+        if (val.x < -range.x )
         {
-            child.gameObject.GetComponent<SpriteRenderer>().color = color;
+            clamped.x = -range.x;
         }
+        else if (val.x > range.x)
+        {
+            clamped.x = range.x;
+        }
+
+        if (val.y < -range.y)
+        {
+            clamped.y = -range.y;
+        }
+        else if (val.y > range.y)
+        {
+            clamped.y = range.y;
+        }
+
+
+        return clamped;
     }
 }

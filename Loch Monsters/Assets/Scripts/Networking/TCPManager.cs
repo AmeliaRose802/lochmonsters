@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Net.Sockets;
 using UnityEngine;
 
-public class TCPManager : MonoBehaviour
+public class TCPManager : MonoBehaviour, IMessageListener
 {
     const int tcpPort = 5555;
     const string serverIP = "127.0.0.1";
@@ -25,19 +25,58 @@ public class TCPManager : MonoBehaviour
             tcpClient.GetStream().Write(BitConverter.GetBytes('e'), 0, 2);
             tcpClient.Close();
         }
-        catch (InvalidOperationException e)
-        { }
-
-
+        catch (InvalidOperationException) { }
     }
+
+
+    private void FixedUpdate()
+    {
+        if (GameManager.instance.gameRunning)
+        {
+            ReceveTCP();
+        }
+    }
+
+
+    void ReceveTCP()
+    {
+        if (tcpClient.Available > 0)
+        {
+            byte [] buffer = new byte[512];
+
+            var data = tcpClient.GetStream().Read(buffer, 0, buffer.Length);
+
+            if (data != 0)
+            {
+                char type = BitConverter.ToChar(buffer, 0);
+                print("New tcp packet of type " + type);
+
+                //Trim off the part of the buffer containing the type so it is ready to be converted
+                var test = new List<Byte>(buffer);
+                buffer = test.GetRange(2, test.Count - 2).ToArray();
+
+                switch (type)
+                {
+                    case 'n':
+                        SpawnSnake message = new SpawnSnake(buffer);
+                        GameManager.instance.messageSystem.DispatchMessage(message);
+                        break;
+                    default:
+                        print("Unknown packet receved");
+                        break;
+                }
+            }
+        }
+    }
+
 
     /*
      * Sets up a connection to the server 
      * Sends connection message with name and color, receves back starting position 
      */
-    public void EstablishConnection(string name)
+    public void EstablishConnection(string name, Color color)
     {
-        ConnectMessage message = new ConnectMessage(new Color(.9f, .8f, .7f), name); //TODO: Send user entered color not placeholder
+        ConnectMessage message = new ConnectMessage(color, name); //TODO: Send user entered color not placeholder
         StartMessage startMessage;
         try
         {
@@ -86,6 +125,7 @@ public class TCPManager : MonoBehaviour
                 byte[] num = new byte[2];
                 tcpStream.Read(num, 0, num.Length);
                 short numClients = BitConverter.ToInt16(num, 0);
+                print("num clients " + numClients);
 
                 //Each other snake requires 60 bytes to store its data
                 byte[] otherSnake = new byte[60];
@@ -100,6 +140,9 @@ public class TCPManager : MonoBehaviour
 
             GameManager.instance.messageSystem.DispatchMessage(startMessage);
 
+            //Now the syncronus set up is done put the client into non blocking mode
+            tcpClient.Client.Blocking = false;
+
         }
         catch (Exception e)
         {
@@ -108,4 +151,21 @@ public class TCPManager : MonoBehaviour
         }
     }
 
+    public void Receive(IMessage message)
+    {
+        switch (message.GetMessageType())
+        {
+            case MessageType.REQUEST_CLOCK_SYNC:
+                SyncClock();
+                break;
+            default:
+                print("Got something else");
+                break;
+        }
+    }
+
+    void SyncClock()
+    {
+
+    }
 }

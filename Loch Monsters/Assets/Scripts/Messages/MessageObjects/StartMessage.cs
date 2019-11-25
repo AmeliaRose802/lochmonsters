@@ -33,7 +33,8 @@ public class StartMessage : IMessage
         startDir = new Vector2(0, 0);
 
         //Logically this should be being sent in the start game message but that takes time and I don't want to get more out of date
-        GameManager.instance.gameTime = time + latency;
+        GameManager.instance.gameTime = time + (latency/2);
+        GameManager.instance.startTime = time + (latency / 2);
         GameManager.instance.updateClock = true;
     }
 

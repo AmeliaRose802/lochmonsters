@@ -361,7 +361,9 @@ MonoBehaviour:
   gameTime: 0
   gameRunning: 0
   updateClock: 0
+  playerColor: {r: 0.97200745, g: 0.427451, b: 1, a: 1}
   messageSystem: {fileID: 0}
+  snakeManager: {fileID: 0}
 --- !u!4 &302110664
 Transform:
   m_ObjectHideFlags: 0
@@ -832,7 +834,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 1
-  m_BackGroundColor: {r: 0, g: 0.19077565, b: 0.49056602, a: 0}
+  m_BackGroundColor: {r: 0.49019608, g: 0, b: 0.05785297, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0

@@ -32,11 +32,11 @@ public class UDPManager: MonoBehaviour, IMessageListener
         
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         if (GameManager.instance.gameRunning)
         {
-            //ReceveUDP();
+            ReceveUDP();
         }
     }
 
@@ -44,13 +44,11 @@ public class UDPManager: MonoBehaviour, IMessageListener
     {
         udpClient = new UdpClient();
         udpClient.Connect(serverIP, udpPort);
+        udpClient.Client.Blocking = false;
     }
 
     void ReceveUDP()
     {
-        //byte[] data = udpClient.EndReceive(res, ref remote);
-        udpClient.Client.Blocking = false;
-
         if (udpClient.Client.Available > 0)
         {
             var data = udpClient.Receive(ref remote);
@@ -85,7 +83,6 @@ public class UDPManager: MonoBehaviour, IMessageListener
         switch (message.GetMessageType())
         {
             case MessageType.UPDATE_POSITION:
-                Debug.Log("Got position update message from message system");
                 SendUDPMessage((PositionUpdate)message);
             break;
         }

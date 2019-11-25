@@ -8,16 +8,25 @@ public class CameraFollow : MonoBehaviour
     public Transform player;
 
 
-    private Vector3 offset;
+    private Vector3 offset = new Vector3(.5f, .5f, -10f);
 
-    // Use this for initialization
-    void Awake()
+    private void Start()
     {
-        offset = transform.position - player.position;
+        StartCoroutine(GetPlayer());
     }
+
+    IEnumerator GetPlayer()
+    {
+        yield return new WaitForFixedUpdate(); //Wait a fixed update cycle to make sure that all new objects can init
+        player = SnakeManager.instance.playerHeadTranform;
+    }
+
 
     void LateUpdate()
     {
-        transform.position = player.position + offset;
+        if(player != null)
+        {
+            transform.position = player.position + offset;
+        }
     }
 }

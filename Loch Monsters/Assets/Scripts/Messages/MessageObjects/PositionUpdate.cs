@@ -22,7 +22,6 @@ public class PositionUpdate : IMessage, NetworkMessage
     //Constructor parses position update from a Byte array passed in
     public PositionUpdate(Byte [] messageBuffer)
     {
-        Debug.Log("New pos update");
         int index = 0;
         index += 2;
         id = BitConverter.ToInt32(messageBuffer, index);
@@ -39,17 +38,19 @@ public class PositionUpdate : IMessage, NetworkMessage
 
         pos = new Vector2(posX, posY);
         rotation = new Vector2(dirX, dirY);
-        Debug.Log(pos);
     }
 
 
     public Byte[] GetMessage()
     {
+        
+  
         UTF8Encoding utfEncoding = new UTF8Encoding();
         //name = name.PadRight(32, ' ');
         List<byte> packet = new List<byte>();
         packet.AddRange(BitConverter.GetBytes('p'));
         packet.AddRange(BitConverter.GetBytes(id));
+        TimeSpan t = DateTime.UtcNow - new DateTime(1970, 1, 1);
         packet.AddRange(BitConverter.GetBytes(GameManager.instance.gameTime));
         packet.AddRange(BitConverter.GetBytes(pos.x));
         packet.AddRange(BitConverter.GetBytes(pos.y));

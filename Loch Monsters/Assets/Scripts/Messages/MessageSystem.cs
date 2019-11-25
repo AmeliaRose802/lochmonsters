@@ -9,7 +9,8 @@ public enum MessageType{
     UPDATE_POSITION,
     EXIT_GAME,
     CONNECT,
-    SPAWN_NON_PLAYER_SNAKE
+    SPAWN_NON_PLAYER_SNAKE,
+    REQUEST_CLOCK_SYNC
 }
 
 public class MessageSystem : MonoBehaviour

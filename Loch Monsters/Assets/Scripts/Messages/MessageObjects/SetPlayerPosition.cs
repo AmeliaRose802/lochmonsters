@@ -17,6 +17,4 @@ public class SetPlayerPosition : IMessage
     {
         return MessageType.SET_PLAYER_POSITION;
     }
-
-
 }
