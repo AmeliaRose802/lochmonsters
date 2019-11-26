@@ -10,7 +10,8 @@ public enum MessageType{
     EXIT_GAME,
     CONNECT,
     SPAWN_NON_PLAYER_SNAKE,
-    REQUEST_CLOCK_SYNC
+    REQUEST_CLOCK_SYNC,
+    TERMINATION_MESSAGE
 }
 
 public class MessageSystem : MonoBehaviour

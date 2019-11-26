@@ -25,7 +25,9 @@ public class NPSnakeHead : MonoBehaviour
     // Move the segment foward
     void FixedUpdate()
     {
-        transform.position = Vector3.MoveTowards(transform.position, target.transform.position, .06f);
+        //transform.position = Vector3.MoveTowards(transform.position, target.transform.position, .06f);
+        transform.position = Vector3.Lerp(transform.position, target.transform.position, Time.deltaTime);
+        
 
         //Thanks to https://www.reddit.com/r/Unity2D/comments/7hwxfk/how_do_i_make_a_tail_like_a_snake/ for this code
         for (int i = 0; i < segments.Count; i++)

@@ -30,7 +30,7 @@ public class TCPManager : MonoBehaviour, IMessageListener
             tcpClient.GetStream().Write(BitConverter.GetBytes('e'), 0, 2);
             tcpClient.Close();
         }
-        catch (InvalidOperationException) { }
+        catch (Exception) { }
     }
 
 

@@ -49,26 +49,41 @@ public class UDPManager: MonoBehaviour, IMessageListener
 
     void ReceveUDP()
     {
-        while(udpClient.Client.Available > 0)
+        try
         {
-            var data = udpClient.Receive(ref remote);
-
-            if (data.Length != 0)
+            while (udpClient.Client.Available > 0)
             {
-                char type = BitConverter.ToChar(data, 0);
+                var data = udpClient.Receive(ref remote);
 
-                switch (type)
+                if (data.Length != 0)
                 {
-                    case 'u':
-                        PositionUpdate p = new PositionUpdate(data);
-                        GameManager.instance.messageSystem.DispatchMessage(p);
-                        break;
-                    default:
-                        Debug.Log("Unknown message receved");
-                        break;
+                    char type = BitConverter.ToChar(data, 0);
+
+                    switch (type)
+                    {
+                        case 'u':
+                            PositionUpdate p = new PositionUpdate(data);
+                            GameManager.instance.messageSystem.DispatchMessage(p);
+                            break;
+                        case 'b':
+                            Debug.Log("Got termination message");
+                            TerminationMessage t = new TerminationMessage();
+                            GameManager.instance.messageSystem.DispatchMessage(t);
+                            break;
+                        default:
+                            Debug.Log("Unknown message receved");
+                            break;
+                    }
                 }
             }
         }
+        catch (SocketException e)
+        {
+            Debug.Log("Something went wrong with the UDP socket");
+            TerminationMessage t = new TerminationMessage();
+            GameManager.instance.messageSystem.DispatchMessage(t);
+        }
+        
     }
 
 

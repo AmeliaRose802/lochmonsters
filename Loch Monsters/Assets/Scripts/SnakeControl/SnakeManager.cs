@@ -70,7 +70,7 @@ public class SnakeManager : MonoBehaviour, IMessageListener
         //Set all nessary data for new snake
         newHead.transform.GetComponent<SpriteRenderer>().color = snake.color;
         newHead.transform.position = snake.pos;
-        newHead.transform.up = snake.dir;
+        //newHead.transform.up = snake.dir;
         target.position = snake.pos;
         target.transform.up = snake.dir;
 
@@ -125,16 +125,14 @@ public class SnakeManager : MonoBehaviour, IMessageListener
             
 
             /*
-            var diff = pos.getPos() - new Vector2(npHeads[id].position.x, npHeads[id].position.y);
+            var diff = pos.getDir() - new Vector2(npTargets[id].up.x, npTargets[id].up.y);
 
             if(diff.sqrMagnitude > 5)
             {
                 Debug.Log("Weirdly large diffrence between current and predicted ");
-                Debug.Log("Current position" + npHeads[id].position + " New position: " + pos.getPos() + " diff " + diff);
-                return;
-            }*/
-            
-
+                Debug.Log("Current position" + npTargets[id].position + " New position: " + pos.getPos() + " diff " + diff);
+            }
+           */
 
             lastUpdateTimes[id] = pos.getTimestamp();
 

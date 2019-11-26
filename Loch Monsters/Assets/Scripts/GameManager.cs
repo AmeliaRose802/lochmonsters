@@ -45,8 +45,8 @@ public class GameManager : MonoBehaviour, IMessageListener
     private void Start()
     {
         messageSystem.Subscribe(MessageType.START_GAME, this);
-        
-        
+        messageSystem.Subscribe(MessageType.TERMINATION_MESSAGE, this);
+
     }
     private void FixedUpdate()
     {
@@ -59,18 +59,30 @@ public class GameManager : MonoBehaviour, IMessageListener
 
     public void Receive(IMessage message)
     {
-        if(message.GetMessageType() == MessageType.START_GAME)
+        switch (message.GetMessageType())
         {
-            print("Start game");
-            StartCoroutine(StartGame((StartMessage)message));
+            case MessageType.START_GAME:
+                print("Start game");
+                StartCoroutine(StartGame((StartMessage)message));
+                break;
+            case MessageType.TERMINATION_MESSAGE:
+                ExitGame();
+                break;
         }
     }
 
+    
     public void LaunchGame(string name)
     {
         networkManager.EstablishConnection(name, playerColor);
     }
 
+    void ExitGame()
+    {
+        Debug.Log("Game no longer connected to the server");
+        gameRunning = false;
+        SceneManager.LoadScene("MenuScene");
+    }
 
     IEnumerator StartGame(StartMessage startMessage)
     {
