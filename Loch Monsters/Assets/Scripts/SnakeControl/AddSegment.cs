@@ -15,10 +15,24 @@ public class AddSegment : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        
         if(collision.tag == "food")
         {
-            Destroy(collision.gameObject);
-            snakeHeadScript.segments.Add(Instantiate(segmentPrefab, snakeHeadScript.segments[snakeHeadScript.segments.Count -1].transform.position, snakeHeadScript.segments[snakeHeadScript.segments.Count - 1].transform.rotation));
+
+            string name = collision.gameObject.name;
+            
+
+            int id = int.Parse(name.Split(' ')[1]);
+            if (FoodManager.instance.foodObjects.ContainsKey(id))
+            {
+                Debug.Log("Picked up food " + name);
+
+                Destroy(collision.gameObject);
+                AteFood ateFood = new AteFood(id);
+                GameManager.instance.messageSystem.DispatchMessage(ateFood);
+                snakeHeadScript.segments.Add(Instantiate(segmentPrefab, snakeHeadScript.segments[snakeHeadScript.segments.Count - 1].transform.position, snakeHeadScript.segments[snakeHeadScript.segments.Count - 1].transform.rotation));
+            }  
+
         }
         
     }

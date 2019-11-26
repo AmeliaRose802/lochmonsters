@@ -20,7 +20,9 @@ public class TCPManager : MonoBehaviour, IMessageListener
         //Make and connect the TCP client
         tcpClient = new TcpClient();
         stopWatch = new Stopwatch();
-        //StartCoroutine(SyncClock());
+
+
+        GameManager.instance.messageSystem.Subscribe(MessageType.ATE_FOOD, this);
     }
 
     void OnApplicationQuit()
@@ -67,6 +69,10 @@ public class TCPManager : MonoBehaviour, IMessageListener
                         break;
                     case 't':
                         HandleClockSyncReply(buffer);
+                        break;
+                    case 'f':
+                        FoodUpdate foodUpdate = new FoodUpdate(buffer);
+                        GameManager.instance.messageSystem.DispatchMessage(foodUpdate);
                         break;
                     default:
                         print("Unknown packet receved");
@@ -166,6 +172,9 @@ public class TCPManager : MonoBehaviour, IMessageListener
             case MessageType.REQUEST_CLOCK_SYNC:
                 SyncClock();
                 break;
+            case MessageType.ATE_FOOD:
+                SendTCPMessage((NetworkMessage)message);
+                break;
             default:
                 print("Got something else");
                 break;
@@ -189,6 +198,12 @@ public class TCPManager : MonoBehaviour, IMessageListener
             }
         }
         
+    }
+
+    public void SendTCPMessage(NetworkMessage message)
+    {
+        var m = message.GetMessage();
+        tcpClient.GetStream().Write(message.GetMessage(),0, m.Length);
     }
 
     void HandleClockSyncReply(byte [] reply)

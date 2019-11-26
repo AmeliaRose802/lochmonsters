@@ -11,7 +11,9 @@ public enum MessageType{
     CONNECT,
     SPAWN_NON_PLAYER_SNAKE,
     REQUEST_CLOCK_SYNC,
-    TERMINATION_MESSAGE
+    TERMINATION_MESSAGE,
+    NEW_FOOD,
+    ATE_FOOD
 }
 
 public class MessageSystem : MonoBehaviour
