@@ -25,6 +25,7 @@ public class AddSegment : MonoBehaviour
             int id = int.Parse(name.Split(' ')[1]);
             if (FoodManager.instance.foodObjects.ContainsKey(id))
             {
+                FoodManager.instance.foodObjects.Remove(id);
                 Debug.Log("Picked up food " + name);
 
                 Destroy(collision.gameObject);
