@@ -8,6 +8,10 @@ public class NPSnakeHead : MonoBehaviour
     public float dist = 1;
 
     Vector3 dir = new Vector3(0, 0, 0);
+
+    public Transform target;
+
+
     Rigidbody2D rb;
 
     public List<GameObject> segments;
@@ -15,16 +19,13 @@ public class NPSnakeHead : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        rb = GetComponent<Rigidbody2D>();
-        //rb.velocity = transform.up * speed;
-
+        
     }
 
     // Move the segment foward
     void FixedUpdate()
     {
-
-        rb.velocity = transform.up * speed;
+        transform.position = Vector3.MoveTowards(transform.position, target.transform.position, .06f);
 
         //Thanks to https://www.reddit.com/r/Unity2D/comments/7hwxfk/how_do_i_make_a_tail_like_a_snake/ for this code
         for (int i = 0; i < segments.Count; i++)

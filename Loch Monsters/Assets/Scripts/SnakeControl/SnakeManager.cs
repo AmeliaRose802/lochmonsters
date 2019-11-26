@@ -9,7 +9,7 @@ public class SnakeManager : MonoBehaviour, IMessageListener
     public GameObject nonPlayerHead;
     public GameObject bodySegment;
 
-    Dictionary<int, Transform> npHeads;
+    Dictionary<int, Transform> npTargets;
     Dictionary<int, long> lastUpdateTimes;
 
     [HideInInspector]
@@ -28,7 +28,7 @@ public class SnakeManager : MonoBehaviour, IMessageListener
             Destroy(this);
         }
 
-        npHeads = new Dictionary<int, Transform>();
+        npTargets = new Dictionary<int, Transform>();
 
         GameManager.instance.messageSystem.Subscribe(MessageType.SET_PLAYER_POSITION, this);
         GameManager.instance.messageSystem.Subscribe(MessageType.SPAWN_NON_PLAYER_SNAKE, this);
@@ -38,7 +38,6 @@ public class SnakeManager : MonoBehaviour, IMessageListener
 
     public void Receive(IMessage message)
     {
-        
         switch (message.GetMessageType())
         {
             case MessageType.SET_PLAYER_POSITION:
@@ -62,13 +61,19 @@ public class SnakeManager : MonoBehaviour, IMessageListener
         GameObject container = Instantiate(new GameObject());
         container.name = "NonPlayerSnake";
         GameObject newHead = Instantiate(nonPlayerHead, container.transform);
+
+        //Non player snakes follow their targets for lerping reasons
+        Transform target = newHead.transform.GetChild(0);
+
         NPSnakeHead snakeHeadManager = newHead.GetComponent<NPSnakeHead>();
 
         //Set all nessary data for new snake
         newHead.transform.GetComponent<SpriteRenderer>().color = snake.color;
         newHead.transform.position = snake.pos;
         newHead.transform.up = snake.dir;
-        
+        target.position = snake.pos;
+        target.transform.up = snake.dir;
+
        
         //Spawn all body segments based on snake length
         for(int i = 0; i< snake.length - 1; i++)
@@ -79,7 +84,7 @@ public class SnakeManager : MonoBehaviour, IMessageListener
         }
 
         //Add the new snake created to the list of snakes
-        npHeads.Add(snake.id, newHead.transform);
+        npTargets.Add(snake.id, target);
     }
 
     public void SetPlayerPos(SetPlayerPosition playerPosition)
@@ -108,19 +113,20 @@ public class SnakeManager : MonoBehaviour, IMessageListener
      * */
     public void UpdateSnakePosition(PositionUpdate pos)
     {
-
+        
         int id = pos.getID();
 
         if (ValidateNPID(id) && CheckUpToDate(id, pos.getTimestamp()))
         {
-            /*
+            
             float elapsedTime = Math.Abs(GameManager.instance.gameTime - pos.getTimestamp());
 
             var expected = ClampToRange(pos.getPos() + (pos.getDir() * 4 * elapsedTime / 1000), new Vector2(25f, 25f));
-            */
+            
 
             /*
             var diff = pos.getPos() - new Vector2(npHeads[id].position.x, npHeads[id].position.y);
+
             if(diff.sqrMagnitude > 5)
             {
                 Debug.Log("Weirdly large diffrence between current and predicted ");
@@ -131,9 +137,9 @@ public class SnakeManager : MonoBehaviour, IMessageListener
 
 
             lastUpdateTimes[id] = pos.getTimestamp();
-            
-            npHeads[id].position = pos.getPos();
-            npHeads[id].up = pos.getDir();
+
+            npTargets[id].position = expected;
+            npTargets[id].up = pos.getDir();
         }
     }
 
@@ -158,7 +164,7 @@ public class SnakeManager : MonoBehaviour, IMessageListener
             {
                 throw new Exception("Got message about self");
             }
-            if (!npHeads.ContainsKey(id))
+            if (!npTargets.ContainsKey(id))
             {
                 throw new KeyNotFoundException("Unknown snake");
             }
