@@ -74,6 +74,10 @@ public class TCPManager : MonoBehaviour, IMessageListener
                         FoodUpdate foodUpdate = new FoodUpdate(buffer);
                         GameManager.instance.messageSystem.DispatchMessage(foodUpdate);
                         break;
+                    case 'a':
+                        FoodEaten ateFoodMessage = new FoodEaten(buffer);
+                        GameManager.instance.messageSystem.DispatchMessage(ateFoodMessage);
+                        break;
                     default:
                         print("Unknown packet receved");
                         break;
@@ -122,23 +126,12 @@ public class TCPManager : MonoBehaviour, IMessageListener
 
                 tcpStream.Read(connectResponse, 0, connectResponse.Length);
                 startMessage = new StartMessage(connectResponse, latency);
-            }
-            else
-            {
-                throw new Exception("Message other then connection reply receved"); //TODO: Probley should be some way to recover from this
-            }
+                print(startMessage.id);
 
-            //Read in the next message
-            tcpStream.Read(type, 0, type.Length);
-            typeChar = BitConverter.ToChar(type, 0);
-
-            //Check if this is the message containing data for all other monsters in the game
-            if (typeChar == 'o')
-            {
-                //Get number of other snakes in the game
                 byte[] num = new byte[2];
                 tcpStream.Read(num, 0, num.Length);
                 short numClients = BitConverter.ToInt16(num, 0);
+
                 print("num clients " + numClients);
 
                 //Each other snake requires 60 bytes to store its data
@@ -149,13 +142,31 @@ public class TCPManager : MonoBehaviour, IMessageListener
                 {
                     tcpStream.Read(otherSnake, 0, otherSnake.Length);
                     startMessage.otherSnakes.Add(new SnakeData(otherSnake));
+                    print("got snake " + new SnakeData(otherSnake).name);
                 }
+                print("HERE");
+
+                tcpStream.Read(num, 0, num.Length);
+                short numFood = BitConverter.ToInt16(num, 0);
+
+                byte[] food = new byte[12];
+
+                for (int i = 0; i < numFood; i++)
+                {
+                    tcpStream.Read(food, 0, food.Length);
+
+                    startMessage.foodInGame.Add(new FoodData(food));
+                }
+
+                GameManager.instance.messageSystem.DispatchMessage(startMessage);
+
+                //Now the syncronus set up is done put the client into non blocking mode
+                tcpClient.Client.Blocking = false;
             }
-
-            GameManager.instance.messageSystem.DispatchMessage(startMessage);
-
-            //Now the syncronus set up is done put the client into non blocking mode
-            tcpClient.Client.Blocking = false;
+            else
+            {
+                throw new Exception("Message other then connection reply receved"); //TODO: Probley should be some way to recover from this
+            }
 
         }
         catch (Exception e)

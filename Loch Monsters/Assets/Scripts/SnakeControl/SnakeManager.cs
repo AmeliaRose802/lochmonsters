@@ -33,6 +33,8 @@ public class SnakeManager : MonoBehaviour, IMessageListener
         GameManager.instance.messageSystem.Subscribe(MessageType.SET_PLAYER_POSITION, this);
         GameManager.instance.messageSystem.Subscribe(MessageType.SPAWN_NON_PLAYER_SNAKE, this);
         GameManager.instance.messageSystem.Subscribe(MessageType.UPDATE_POSITION, this);
+        GameManager.instance.messageSystem.Subscribe(MessageType.ATE_FOOD, this);
+        GameManager.instance.messageSystem.Subscribe(MessageType.FOOD_EATEN, this);
         lastUpdateTimes = new Dictionary<int, long>();
     }
 
@@ -50,8 +52,27 @@ public class SnakeManager : MonoBehaviour, IMessageListener
             case MessageType.UPDATE_POSITION:
                 UpdateSnakePosition((PositionUpdate)message);
                 break;
+            case MessageType.FOOD_EATEN:
+                AddNonPlayerSnakeSegment(((FoodEaten)message).snakeID);
+                break;
+
         }
         
+    }
+
+    void AddNonPlayerSnakeSegment(int id)
+    {
+        if (ValidateNPID(id))
+        {
+            GameObject npSnake = npTargets[id].parent.gameObject;
+
+            NPSnakeHead snakeHeadScript = npSnake.GetComponent<NPSnakeHead>();
+
+            GameObject newSegment = Instantiate(bodySegment, npSnake.transform.parent);
+            newSegment.GetComponent<SpriteRenderer>().color = snakeHeadScript.snakeData.color;
+
+            snakeHeadScript.segments.Add(newSegment);
+        }
     }
 
     void SpawnSnake(SnakeData snake)
@@ -59,7 +80,7 @@ public class SnakeManager : MonoBehaviour, IMessageListener
         Debug.Log("Got message to spawn snake " + snake.name);
 
         GameObject container = Instantiate(new GameObject());
-        container.name = "NonPlayerSnake";
+        container.name = "NP Snake "+snake.name;
         GameObject newHead = Instantiate(nonPlayerHead, container.transform);
 
         //Non player snakes follow their targets for lerping reasons
@@ -67,6 +88,7 @@ public class SnakeManager : MonoBehaviour, IMessageListener
 
         NPSnakeHead snakeHeadManager = newHead.GetComponent<NPSnakeHead>();
 
+        snakeHeadManager.snakeData = snake;
         //Set all nessary data for new snake
         newHead.transform.GetComponent<SpriteRenderer>().color = snake.color;
         newHead.transform.position = snake.pos;
@@ -122,17 +144,6 @@ public class SnakeManager : MonoBehaviour, IMessageListener
             float elapsedTime = Math.Abs(GameManager.instance.gameTime - pos.getTimestamp());
 
             var expected = ClampToRange(pos.getPos() + (pos.getDir() * 4 * elapsedTime / 1000), new Vector2(25f, 25f));
-            
-
-            /*
-            var diff = pos.getDir() - new Vector2(npTargets[id].up.x, npTargets[id].up.y);
-
-            if(diff.sqrMagnitude > 5)
-            {
-                Debug.Log("Weirdly large diffrence between current and predicted ");
-                Debug.Log("Current position" + npTargets[id].position + " New position: " + pos.getPos() + " diff " + diff);
-            }
-           */
 
             lastUpdateTimes[id] = pos.getTimestamp();
 

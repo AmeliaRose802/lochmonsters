@@ -24,7 +24,6 @@ public class GameManager : MonoBehaviour, IMessageListener
 
     public SnakeManager snakeManager;
 
-
     private void Awake()
     {
         if(instance != null)
@@ -99,6 +98,13 @@ public class GameManager : MonoBehaviour, IMessageListener
             SpawnSnake spawnMessage = new SpawnSnake(snake);
             messageSystem.DispatchMessage(spawnMessage);
         }
+
+        foreach (var food in startMessage.foodInGame)
+        {
+            FoodUpdate spawnMessage = new FoodUpdate(food);
+            messageSystem.DispatchMessage(spawnMessage);
+        }
+
 
         gameRunning = true; //Now start doing all the game processes since things are inited
     }

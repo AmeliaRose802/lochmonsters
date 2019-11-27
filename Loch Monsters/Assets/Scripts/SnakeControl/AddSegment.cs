@@ -25,13 +25,17 @@ public class AddSegment : MonoBehaviour
             int id = int.Parse(name.Split(' ')[1]);
             if (FoodManager.instance.foodObjects.ContainsKey(id))
             {
-                FoodManager.instance.foodObjects.Remove(id);
+                //FoodManager.instance.foodObjects.Remove(id);
                 Debug.Log("Picked up food " + name);
 
-                Destroy(collision.gameObject);
+                //Destroy(collision.gameObject);
                 AteFood ateFood = new AteFood(id);
                 GameManager.instance.messageSystem.DispatchMessage(ateFood);
-                snakeHeadScript.segments.Add(Instantiate(segmentPrefab, snakeHeadScript.segments[snakeHeadScript.segments.Count - 1].transform.position, snakeHeadScript.segments[snakeHeadScript.segments.Count - 1].transform.rotation));
+                var newSegment = Instantiate(segmentPrefab, snakeHeadScript.segments[snakeHeadScript.segments.Count - 1].transform.position, snakeHeadScript.segments[snakeHeadScript.segments.Count - 1].transform.rotation);
+                newSegment.GetComponent<SpriteRenderer>().color = GameManager.instance.playerColor;
+
+                snakeHeadScript.segments.Add(newSegment);
+
             }  
 
         }

@@ -9,11 +9,13 @@ public class StartMessage : IMessage
     public Vector2 startPos;
     public Vector2 startDir;
     public List<SnakeData> otherSnakes;
+    public List<FoodData> foodInGame;
 
 
     public StartMessage(int x, int y)
     {
         otherSnakes = new List<SnakeData>();
+        foodInGame = new List<FoodData>();
         startPos = new Vector2(x, y);
         startDir = new Vector2(0, 0);
     }
@@ -21,6 +23,7 @@ public class StartMessage : IMessage
     public StartMessage(byte [] message, long latency)
     {
         otherSnakes = new List<SnakeData>();
+        foodInGame = new List<FoodData>();
         int index = 0;
         id = BitConverter.ToInt32(message, index);
         index += 4;

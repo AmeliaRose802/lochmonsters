@@ -13,7 +13,8 @@ public enum MessageType{
     REQUEST_CLOCK_SYNC,
     TERMINATION_MESSAGE,
     NEW_FOOD,
-    ATE_FOOD
+    ATE_FOOD,
+    FOOD_EATEN
 }
 
 public class MessageSystem : MonoBehaviour

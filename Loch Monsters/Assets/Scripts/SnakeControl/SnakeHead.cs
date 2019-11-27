@@ -13,6 +13,7 @@ public class SnakeHead : MonoBehaviour
     Rigidbody2D rb;
 
     public List<GameObject> segments;
+    public SnakeData snakeData;
 
     // Start is called before the first frame update
     void Start()
