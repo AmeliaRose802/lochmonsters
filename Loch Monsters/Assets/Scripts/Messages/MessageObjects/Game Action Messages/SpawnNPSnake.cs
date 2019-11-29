@@ -2,16 +2,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SpawnSnake : IMessage
+public class SpawnNPSnake : IMessage
 {
     public SnakeData snake;
 
-    public SpawnSnake(SnakeData snake)
+    public SpawnNPSnake(SnakeData snake)
     {
         this.snake = snake;
     }
 
-    public SpawnSnake(byte [] snake)
+    public SpawnNPSnake(byte [] snake)
     {
         this.snake = new SnakeData(snake);
     }
@@ -20,6 +20,4 @@ public class SpawnSnake : IMessage
     {
         return MessageType.SPAWN_NON_PLAYER_SNAKE;
     }
-
-
 }

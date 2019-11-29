@@ -13,47 +13,51 @@ public class SnakeManager : MonoBehaviour, IMessageListener
     Dictionary<int, long> lastUpdateTimes;
 
     [HideInInspector]
-    public Transform playerHeadTranform;
+    Transform playerHeadTranform;
 
-    public static SnakeManager instance;
-
-    public void Awake()
+    void Awake()
     {
-        if(instance == null)
-        {
-            instance = this;
-        }
-        else
-        {
-            Destroy(this);
-        }
 
         npTargets = new Dictionary<int, Transform>();
 
-        GameManager.instance.messageSystem.Subscribe(MessageType.SET_PLAYER_POSITION, this);
-        GameManager.instance.messageSystem.Subscribe(MessageType.SPAWN_NON_PLAYER_SNAKE, this);
-        GameManager.instance.messageSystem.Subscribe(MessageType.UPDATE_POSITION, this);
-        GameManager.instance.messageSystem.Subscribe(MessageType.ATE_FOOD, this);
-        GameManager.instance.messageSystem.Subscribe(MessageType.FOOD_EATEN, this);
+        MessageSystem.instance.Subscribe(MessageType.CREATE_PLAYER, this);
+        MessageSystem.instance.Subscribe(MessageType.SPAWN_NON_PLAYER_SNAKE, this);
+        MessageSystem.instance.Subscribe(MessageType.UPDATE_NP_POSITION, this);
+        MessageSystem.instance.Subscribe(MessageType.FOOD_EATEN, this);
+        MessageSystem.instance.Subscribe(MessageType.ADD_PLAYER_SEGMENT, this);
         lastUpdateTimes = new Dictionary<int, long>();
+    }
+
+    void OnDestroy()
+    {
+        MessageSystem.instance.Unsubscribe(MessageType.CREATE_PLAYER, this);
+        MessageSystem.instance.Unsubscribe(MessageType.SPAWN_NON_PLAYER_SNAKE, this);
+        MessageSystem.instance.Unsubscribe(MessageType.UPDATE_NP_POSITION, this);
+        MessageSystem.instance.Unsubscribe(MessageType.FOOD_EATEN, this);
+        MessageSystem.instance.Unsubscribe(MessageType.ADD_PLAYER_SEGMENT, this);
+        npTargets.Clear();
+        lastUpdateTimes.Clear();
     }
 
     public void Receive(IMessage message)
     {
         switch (message.GetMessageType())
         {
-            case MessageType.SET_PLAYER_POSITION:
-                SetPlayerPos((SetPlayerPosition)message);
+            case MessageType.CREATE_PLAYER:
+                SpawnPlayer((CreatePlayer)message);
                 break;
             case MessageType.SPAWN_NON_PLAYER_SNAKE:
-                SpawnSnake(((SpawnSnake)message).snake);
+                SpawnSnake(((SpawnNPSnake)message).snake);
                 break;
 
-            case MessageType.UPDATE_POSITION:
-                UpdateSnakePosition((PositionUpdate)message);
+            case MessageType.UPDATE_NP_POSITION:
+                UpdateNPSnakePosition((PositionUpdate)message);
                 break;
             case MessageType.FOOD_EATEN:
-                AddNonPlayerSnakeSegment(((FoodEaten)message).snakeID);
+                AddNonPlayerSnakeSegment(((OtherAteFood)message).snakeID);
+                break;
+            case MessageType.ADD_PLAYER_SEGMENT:
+                AddPlayerSegment();
                 break;
 
         }
@@ -73,6 +77,20 @@ public class SnakeManager : MonoBehaviour, IMessageListener
 
             snakeHeadScript.segments.Add(newSegment);
         }
+    }
+
+    void AddPlayerSegment()
+    {
+
+        SnakeHead headScript = playerHeadTranform.gameObject.GetComponent<SnakeHead>();
+
+        var newSegment = Instantiate(bodySegment, playerHeadTranform.parent);
+        newSegment.transform.position = headScript.segments[headScript.segments.Count - 1].transform.position;
+        newSegment.transform.rotation = headScript.segments[headScript.segments.Count - 1].transform.rotation;
+        newSegment.GetComponent<SpriteRenderer>().color = headScript.playerColor;
+
+        headScript.segments.Add(newSegment);
+
     }
 
     void SpawnSnake(SnakeData snake)
@@ -109,21 +127,24 @@ public class SnakeManager : MonoBehaviour, IMessageListener
         npTargets.Add(snake.id, target);
     }
 
-    public void SetPlayerPos(SetPlayerPosition playerPosition)
+    void SpawnPlayer(CreatePlayer createPlayer)
     {
         
         GameObject container = Instantiate(new GameObject());
         container.name = "Player";
         var head = Instantiate(playerHead, container.transform);
+        head.name = "PlayerHead";
         SnakeHead snakeHeadManager = head.GetComponent<SnakeHead>();
+        snakeHeadManager.playerColor = createPlayer.color;
+        snakeHeadManager.name = createPlayer.name;
 
-        head.transform.position = playerPosition.pos;
-        head.transform.up = playerPosition.der;
+        head.transform.position = createPlayer.pos;
+        head.transform.up = createPlayer.der;
 
-        for (int i = 0; i < GameManager.DEFAULT_LENGTH -1; i++)
+        for (int i = 0; i < GlobalConsts.DEFAULT_LENGTH -1; i++)
         {
             GameObject newSegment = Instantiate(bodySegment, container.transform);
-            newSegment.GetComponent<SpriteRenderer>().color = GameManager.instance.playerColor;
+            newSegment.GetComponent<SpriteRenderer>().color = snakeHeadManager.playerColor;
             snakeHeadManager.segments.Add(newSegment);
         }
 
@@ -133,25 +154,24 @@ public class SnakeManager : MonoBehaviour, IMessageListener
     /*
      * Set the position for a non player snake. Does nothing if pos is not valid
      * */
-    public void UpdateSnakePosition(PositionUpdate pos)
+    void UpdateNPSnakePosition(PositionUpdate pos)
     {
         
-        int id = pos.getID();
+        int id = pos.id;
 
-        if (ValidateNPID(id) && CheckUpToDate(id, pos.getTimestamp()))
+        if (ValidateNPID(id) && CheckUpToDate(id, pos.timestamp))
         {
             
-            float elapsedTime = Math.Abs(GameManager.instance.gameTime - pos.getTimestamp());
+            float elapsedTime = Math.Abs(GameManager.instance.gameTime - pos.timestamp);
 
-            var expected = ClampToRange(pos.getPos() + (pos.getDir() * 4 * elapsedTime / 1000), new Vector2(25f, 25f));
+            var expected = GlobalConsts.ClampToRange(pos.position + (pos.direction * 4 * elapsedTime / 1000), new Vector2(25f, 25f));
 
-            lastUpdateTimes[id] = pos.getTimestamp();
+            lastUpdateTimes[id] = pos.timestamp;
 
             npTargets[id].position = expected;
-            npTargets[id].up = pos.getDir();
+            npTargets[id].up = pos.direction;
         }
     }
-
 
     /*
      * Returns true if this packet is up to date or if no data exists for it already
@@ -191,30 +211,5 @@ public class SnakeManager : MonoBehaviour, IMessageListener
         }
 
         return isOk;
-    }
-
-    Vector2 ClampToRange(Vector2 val, Vector2 range)
-    {
-        Vector2 clamped = val;
-        if (val.x < -range.x )
-        {
-            clamped.x = -range.x;
-        }
-        else if (val.x > range.x)
-        {
-            clamped.x = range.x;
-        }
-
-        if (val.y < -range.y)
-        {
-            clamped.y = -range.y;
-        }
-        else if (val.y > range.y)
-        {
-            clamped.y = range.y;
-        }
-
-
-        return clamped;
-    }
+    } 
 }

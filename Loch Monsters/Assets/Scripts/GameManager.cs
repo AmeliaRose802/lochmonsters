@@ -1,28 +1,19 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour, IMessageListener
 {
-    public const int DEFAULT_LENGTH = 3;
+    //Static
     public static GameManager instance;
-    public string playerName;
 
-    public NetworkManagerScript networkManager;
-    public int id;
+    public int id;    
+
     public long gameTime;
     public long startTime;
     public bool gameRunning = false;
     public bool updateClock = false;
-
-    public Color playerColor; //TODO: Let player choose
-    
-    public MessageSystem messageSystem;
-
-    public SnakeManager snakeManager;
 
     private void Awake()
     {
@@ -34,19 +25,27 @@ public class GameManager : MonoBehaviour, IMessageListener
         {
             instance = this;
         }
-        DontDestroyOnLoad(this.gameObject);
-
-
-        networkManager = GetComponentInChildren<NetworkManagerScript>();
-        messageSystem = GetComponent<MessageSystem>();
     }
 
     private void Start()
     {
-        messageSystem.Subscribe(MessageType.START_GAME, this);
-        messageSystem.Subscribe(MessageType.TERMINATION_MESSAGE, this);
-
+        MessageSystem.instance.Subscribe(MessageType.START_GAME, this);
+        MessageSystem.instance.Subscribe(MessageType.END_GAME, this);
     }
+
+    public void Receive(IMessage message)
+    {
+        switch (message.GetMessageType())
+        {
+            case MessageType.START_GAME:
+                StartCoroutine(StartGame((StartGame)message));
+                break;
+            case MessageType.END_GAME:
+                ExitGame();
+                break;
+        }
+    }
+
     private void FixedUpdate()
     {
         if (updateClock)
@@ -56,24 +55,9 @@ public class GameManager : MonoBehaviour, IMessageListener
         }
     }
 
-    public void Receive(IMessage message)
+    public void LaunchGame(string name, Color playerColor)
     {
-        switch (message.GetMessageType())
-        {
-            case MessageType.START_GAME:
-                print("Start game");
-                StartCoroutine(StartGame((StartMessage)message));
-                break;
-            case MessageType.TERMINATION_MESSAGE:
-                ExitGame();
-                break;
-        }
-    }
-
-    
-    public void LaunchGame(string name)
-    {
-        networkManager.EstablishConnection(name, playerColor);
+        MessageSystem.instance.DispatchMessage(new LaunchGame("127.0.0.1", 5555, name, playerColor));
     }
 
     void ExitGame()
@@ -83,7 +67,7 @@ public class GameManager : MonoBehaviour, IMessageListener
         SceneManager.LoadScene("MenuScene");
     }
 
-    IEnumerator StartGame(StartMessage startMessage)
+    IEnumerator StartGame(StartGame startMessage)
     {
         id = startMessage.id;
 
@@ -91,23 +75,21 @@ public class GameManager : MonoBehaviour, IMessageListener
 
         yield return new WaitForFixedUpdate(); //Wait a fixed update cycle to make sure that all new objects can init
 
-        messageSystem.DispatchMessage(new SetPlayerPosition(startMessage.startPos, startMessage.startDir));
+        MessageSystem.instance.DispatchMessage(new CreatePlayer(startMessage.playerName, startMessage.playerColor, startMessage.startPos, startMessage.startDir));
 
         foreach (var snake in startMessage.otherSnakes)
         {
-            SpawnSnake spawnMessage = new SpawnSnake(snake);
-            messageSystem.DispatchMessage(spawnMessage);
+            SpawnNPSnake spawnMessage = new SpawnNPSnake(snake);
+            MessageSystem.instance.DispatchMessage(spawnMessage);
         }
 
         foreach (var food in startMessage.foodInGame)
         {
-            FoodUpdate spawnMessage = new FoodUpdate(food);
-            messageSystem.DispatchMessage(spawnMessage);
+            SpawnFood spawnMessage = new SpawnFood(food);
+            MessageSystem.instance.DispatchMessage(spawnMessage);
         }
 
 
         gameRunning = true; //Now start doing all the game processes since things are inited
     }
-
-
 }

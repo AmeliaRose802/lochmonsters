@@ -6,60 +6,82 @@ public class FoodManager : MonoBehaviour, IMessageListener
 {
     public GameObject foodPrefab;
 
-    [HideInInspector]
-    public Dictionary<int, GameObject> foodObjects;
-
-    public static FoodManager instance;
+    //Doing something like the object pool pattern so that the computer doens't get destroyed constantly creating and destroying food
+    //It doens't instantate them all up front but instead makes them as needed so as to not waste memory
+    Queue<GameObject> deadFoodObjects;
+    Dictionary<int, GameObject> foodObjects;
 
     private void Awake()
     {
         foodObjects = new Dictionary<int, GameObject>();
-        instance = this;
+        deadFoodObjects = new Queue<GameObject>();
     }
 
     private void Start()
     {
-        print("Food manager start being called");
-        GameManager.instance.messageSystem.Subscribe(MessageType.NEW_FOOD, this);
-        GameManager.instance.messageSystem.Subscribe(MessageType.ATE_FOOD, this);
-        GameManager.instance.messageSystem.Subscribe(MessageType.FOOD_EATEN, this);
+        MessageSystem.instance.Subscribe(MessageType.SPAWN_NEW_FOOD, this);
+        MessageSystem.instance.Subscribe(MessageType.ATE_FOOD, this);
+        MessageSystem.instance.Subscribe(MessageType.FOOD_EATEN, this);
     }
 
     public void Receive(IMessage message)
     {
         switch (message.GetMessageType())
         {
-            case MessageType.NEW_FOOD:
-                print("new food");
-                SpawnFood((FoodUpdate)message);
+            case MessageType.SPAWN_NEW_FOOD:
+                SpawnFood((SpawnFood)message);
                 break;
             case MessageType.FOOD_EATEN:
-                FoodEaten eatenMessage = (FoodEaten)message;
-                RemoveFood(eatenMessage.foodID);
+                OtherAteFood eatenMessage = (OtherAteFood)message;
+                FoodEaten(eatenMessage.foodID);
                 break;
             case MessageType.ATE_FOOD:
-                AteFood ateMessage = (AteFood)message;
-                RemoveFood(ateMessage.foodID);
+                PlayerAteFood ateMessage = (PlayerAteFood)message;
+                FoodEaten(ateMessage.foodID);
                 break;
         }
     }
 
-    void SpawnFood(FoodUpdate food)
+    private void SpawnFood(SpawnFood food)
     {
-        var newFood = Instantiate(foodPrefab, transform);
+        GameObject newFood;
+        if(deadFoodObjects.Count <= 0)
+        {
+            newFood = Instantiate(foodPrefab, transform);
+        }
+        else
+        {
+            newFood = deadFoodObjects.Dequeue();
+            newFood.SetActive(true);
+        }
+        
         newFood.name = "Food " + food.id;
         foodObjects.Add(food.id, newFood);
 
         newFood.transform.position = food.pos;        
     }
 
-    void RemoveFood(int id)
+    private void FoodEaten(int id)
     {
         if (foodObjects.ContainsKey(id))
         {
-            GameObject toRemove = foodObjects[id];
+            foodObjects[id].SetActive(false);
+            deadFoodObjects.Enqueue(foodObjects[id]);
             foodObjects.Remove(id);
-            Destroy(toRemove);
+
+            //Firing this from here bipasses the double trigger enter bug by verifying that the list contains the object before adding a segment
+            MessageSystem.instance.DispatchMessage(new AddPlayerSegment());
         }
     }
+
+    private void OnDestroy()
+    {
+        print("Destroying food manager food objects: "+foodObjects.Count);
+        MessageSystem.instance.Unsubscribe(MessageType.SPAWN_NEW_FOOD, this);
+        MessageSystem.instance.Unsubscribe(MessageType.ATE_FOOD, this);
+        MessageSystem.instance.Unsubscribe(MessageType.FOOD_EATEN, this);
+        foodObjects.Clear();
+        print("Destroying food manager: "+foodObjects.Count);
+    }
+
 }

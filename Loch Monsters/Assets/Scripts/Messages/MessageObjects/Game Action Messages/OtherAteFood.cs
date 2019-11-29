@@ -2,12 +2,12 @@
 using System.Collections;
 using System;
 
-public class FoodEaten : IMessage
+public class OtherAteFood : IMessage
 {
     public int foodID;
     public int snakeID;
 
-    public FoodEaten(byte[] buffer)
+    public OtherAteFood(byte[] buffer)
     {
         int index = 0;
         foodID = BitConverter.ToInt32(buffer, index);

@@ -1,35 +1,33 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using UnityEngine;
 
-
-/*
- * Get and send UDP messages 
- * */
 public class UDPManager: MonoBehaviour, IMessageListener
 {
-    const int udpPort = 5555;
-    const string serverIP = "127.0.0.1";
-
     IPEndPoint remote = new IPEndPoint(IPAddress.Any, 0);
 
     UdpClient udpClient;
 
     private void Start()
     {
-        GameManager.instance.messageSystem.Subscribe(MessageType.UPDATE_POSITION, this);
+        MessageSystem.instance.Subscribe(MessageType.UPDATE_NP_POSITION, this);
+        MessageSystem.instance.Subscribe(MessageType.END_GAME, this);
+        MessageSystem.instance.Subscribe(MessageType.CONNECT_GAME, this);
+        MessageSystem.instance.Subscribe(MessageType.SEND_PLAYER_POSITION, this);
+    }
+
+    private void OnDestroy()
+    {
+        MessageSystem.instance.Unsubscribe(MessageType.UPDATE_NP_POSITION, this);
+        MessageSystem.instance.Unsubscribe(MessageType.END_GAME, this);
+        MessageSystem.instance.Unsubscribe(MessageType.CONNECT_GAME, this);
+        MessageSystem.instance.Unsubscribe(MessageType.SEND_PLAYER_POSITION, this);
     }
 
     void OnApplicationQuit()
     {
-        if (GameManager.instance.gameRunning)
-        {
-            udpClient.Close();
-        }
-        
+        TerminateConnection();
     }
 
     private void FixedUpdate()
@@ -40,14 +38,9 @@ public class UDPManager: MonoBehaviour, IMessageListener
         }
     }
 
-    public void EstablishConnection()
-    {
-        udpClient = new UdpClient();
-        udpClient.Connect(serverIP, udpPort);
-        udpClient.Client.Blocking = false;
-    }
 
-    void ReceveUDP()
+
+    private void ReceveUDP()
     {
         try
         {
@@ -62,13 +55,10 @@ public class UDPManager: MonoBehaviour, IMessageListener
                     switch (type)
                     {
                         case 'u':
-                            PositionUpdate p = new PositionUpdate(data);
-                            GameManager.instance.messageSystem.DispatchMessage(p);
+                            MessageSystem.instance.DispatchMessage(new PositionUpdate(data));
                             break;
                         case 'b':
-                            Debug.Log("Got termination message");
-                            TerminationMessage t = new TerminationMessage();
-                            GameManager.instance.messageSystem.DispatchMessage(t);
+                            MessageSystem.instance.DispatchMessage(new EndGame());
                             break;
                         default:
                             Debug.Log("Unknown message receved");
@@ -79,27 +69,55 @@ public class UDPManager: MonoBehaviour, IMessageListener
         }
         catch (SocketException e)
         {
-            Debug.Log("Something went wrong with the UDP socket");
-            TerminationMessage t = new TerminationMessage();
-            GameManager.instance.messageSystem.DispatchMessage(t);
+            Debug.Log("Something went wrong with the UDP socket "+ e);
+            MessageSystem.instance.DispatchMessage(new EndGame());
         }
         
     }
 
-
-    public void SendUDPMessage(NetworkMessage message)
+    private void SendUDPMessage(INetworkMessage message)
     {
-        var m = message.GetMessage();
-        udpClient.Send(message.GetMessage(), m.Length);
+        try
+        {
+            var m = message.GetMessage();
+            udpClient.Send(m, m.Length);
+        }
+        catch (Exception e)
+        {
+            Debug.Log("Something went wrong sending UDP: " + e);
+        }
+
     }
 
     public void Receive(IMessage message)
     {
         switch (message.GetMessageType())
         {
-            case MessageType.UPDATE_POSITION:
+            case MessageType.SEND_PLAYER_POSITION:
                 SendUDPMessage((PositionUpdate)message);
-            break;
+                break;
+            case MessageType.END_GAME:
+                TerminateConnection();
+                break;
+            case MessageType.CONNECT_GAME:
+                EstablishConnection((LaunchGame)message);
+                break;
         }
+    }
+
+    private void EstablishConnection(LaunchGame message)
+    {
+        udpClient = new UdpClient();
+        udpClient.Connect(message.serverIP, message.serverPort);
+        udpClient.Client.Blocking = false;
+    }
+
+    private void TerminateConnection()
+    {
+        try
+        {
+            udpClient.Close();
+        }
+        catch (Exception) { };
     }
 }

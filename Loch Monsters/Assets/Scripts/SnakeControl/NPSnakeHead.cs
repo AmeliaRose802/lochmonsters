@@ -4,32 +4,23 @@ using UnityEngine;
 
 public class NPSnakeHead : MonoBehaviour
 {
-    public float speed = 5;
-    public float dist = 1;
-
-    Vector3 dir = new Vector3(0, 0, 0);
-
-    public Transform target;
-
-
-    Rigidbody2D rb;
+    private Transform target;
 
     public List<GameObject> segments;
     public SnakeData snakeData;
 
-    // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
-        
+        target = transform.GetChild(0);
     }
-
-    // Move the segment foward
     void FixedUpdate()
     {
-        //transform.position = Vector3.MoveTowards(transform.position, target.transform.position, .06f);
         transform.position = Vector3.Lerp(transform.position, target.transform.position, Time.deltaTime);
-        
+        PositionTail();
+    }
 
+    void PositionTail()
+    {
         //Thanks to https://www.reddit.com/r/Unity2D/comments/7hwxfk/how_do_i_make_a_tail_like_a_snake/ for this code
         for (int i = 0; i < segments.Count; i++)
         {
@@ -39,13 +30,7 @@ public class NPSnakeHead : MonoBehaviour
             segments[i].transform.rotation = Quaternion.LookRotation(Vector3.forward, (targetS - positionS).normalized);
             Vector3 diff = positionS - targetS;  //vector pointing from p[i - 1] to p[i]
             diff.Normalize();
-            segment.transform.position = targetS + dist * diff;
+            segment.transform.position = targetS + GlobalConsts.SEGMENT_DIST * diff;
         }
-
-    }
-
-    float AngleBetweenPoints(Vector2 a, Vector2 b)
-    {
-        return Mathf.Atan((a.y - b.y) / a.x - b.x) * Mathf.Rad2Deg;
     }
 }

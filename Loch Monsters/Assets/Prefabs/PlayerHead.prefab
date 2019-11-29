@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: 3776477111089423455}
   m_Layer: 0
   m_Name: PlayerHead
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -149,8 +149,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 018c5de850678094fb3ab693804d4e48, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  segmentPrefab: {fileID: 1688169848568217187, guid: 2cfa56190e6a6ba4ab3a322ed5a2d9d2,
-    type: 3}
 --- !u!58 &3776477111089423455
 CircleCollider2D:
   m_ObjectHideFlags: 0
