@@ -55,11 +55,6 @@ public class GameManager : MonoBehaviour, IMessageListener
         }
     }
 
-    public void LaunchGame(string name, Color playerColor)
-    {
-        MessageSystem.instance.DispatchMessage(new LaunchGame("127.0.0.1", 5555, name, playerColor));
-    }
-
     void ExitGame()
     {
         Debug.Log("Game no longer connected to the server");

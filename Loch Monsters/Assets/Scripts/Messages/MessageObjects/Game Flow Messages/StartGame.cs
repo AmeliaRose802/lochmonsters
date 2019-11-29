@@ -32,9 +32,9 @@ public class StartGame : IMessage
         int index = 0;
         id = BitConverter.ToInt32(message, index);
         index += 4;
-        int xPos = BitConverter.ToInt32(message, index);
+        float xPos = BitConverter.ToSingle(message, index);
         index += 4;
-        int yPos = BitConverter.ToInt32(message, index);
+        float yPos = BitConverter.ToSingle(message, index);
         index += 4;
         long time = BitConverter.ToInt64(message, index);
         index += 8;

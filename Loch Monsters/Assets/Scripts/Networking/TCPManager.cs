@@ -195,6 +195,7 @@ public class TCPManager : MonoBehaviour, IMessageListener
             else
             {
                 throw new Exception("Message other then connection reply receved"); //TODO: Probley should be some way to recover from this
+
             }
 
         }
@@ -202,6 +203,7 @@ public class TCPManager : MonoBehaviour, IMessageListener
         {
             UnityEngine.Debug.Log("ERROR");
             UnityEngine.Debug.Log(e.ToString());
+            MessageSystem.instance.DispatchMessage(new ConnectFailed(e.ToString()));
         }
     }
 }

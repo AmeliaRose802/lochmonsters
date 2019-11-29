@@ -38,8 +38,6 @@ public class UDPManager: MonoBehaviour, IMessageListener
         }
     }
 
-
-
     private void ReceveUDP()
     {
         try
