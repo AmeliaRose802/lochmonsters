@@ -3,11 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 
-public class AteFood : NetworkMessage, IMessage
+public class PlayerAteFood : INetworkMessage, IMessage
 {
     public int foodID;
 
-    public AteFood(int id)
+    public PlayerAteFood(int id)
     {
         foodID = id;
     }

@@ -10,7 +10,6 @@ public class SnakeData
     public Color color;
     public Vector2 pos;
     public Vector2 dir;
-    public long lastUpdateTime = 0;
 
     public SnakeData(int id, string name, short length, Color color, Vector2 pos, Vector2 dir)
     {
@@ -26,7 +25,7 @@ public class SnakeData
     public SnakeData(byte[] snakeDataBytes)
     {
         int index = 0;
-        this.id = BitConverter.ToInt32(snakeDataBytes, index);
+        id = BitConverter.ToInt32(snakeDataBytes, index);
 
 
         index += 4;

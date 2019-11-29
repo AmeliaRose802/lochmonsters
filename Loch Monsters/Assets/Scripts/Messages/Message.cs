@@ -3,7 +3,7 @@
     MessageType GetMessageType();
 }
 
-public interface NetworkMessage
+public interface INetworkMessage
 {
     byte[] GetMessage();
 }

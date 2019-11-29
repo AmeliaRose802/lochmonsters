@@ -1,10 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class TerminationMessage : IMessage
+public class EndGame : IMessage
 {
     public MessageType GetMessageType()
     {
-        return MessageType.TERMINATION_MESSAGE;
+        return MessageType.END_GAME;
     }
 }

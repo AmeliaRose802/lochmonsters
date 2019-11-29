@@ -1,13 +1,12 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System;
 
-public class FoodUpdate : IMessage
+public class SpawnFood : IMessage
 {
     public int id;
     public Vector2 pos;
 
-    public FoodUpdate(byte [] buffer)
+    public SpawnFood(byte [] buffer)
     {
         int index = 0;
         id = BitConverter.ToInt32(buffer, index);
@@ -19,7 +18,7 @@ public class FoodUpdate : IMessage
         pos = new Vector2(posX, posY);
     }
 
-    public FoodUpdate(FoodData food)
+    public SpawnFood(FoodData food)
     {
         id = food.id;
         pos = food.pos;
@@ -27,6 +26,6 @@ public class FoodUpdate : IMessage
 
     public MessageType GetMessageType()
     {
-        return MessageType.NEW_FOOD;
+        return MessageType.SPAWN_NEW_FOOD;
     }
 }

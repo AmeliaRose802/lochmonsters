@@ -5,19 +5,14 @@ using System.Net.Sockets;
 using System.Text;
 using UnityEngine;
 
-public class ConnectMessage : IMessage
+public class ConnectMessage : INetworkMessage
 {
     UTF8Encoding utfEncoding = new UTF8Encoding();
 
-    short colorR;
-    short colorB;
-    short colorG;
-    string name;
-
-    public MessageType GetMessageType()
-    {
-        return MessageType.CONNECT;
-    }
+    readonly short colorR;
+    readonly short colorB;
+    readonly short colorG;
+    readonly string name;
 
     public ConnectMessage(Color color, string playerName)
     {
@@ -29,9 +24,9 @@ public class ConnectMessage : IMessage
         colorB = (short)(color.b * 255);
     }
 
-    public Byte[] GetMessage()
+    public byte[] GetMessage()
     {
-        List<Byte> message = new List<Byte>();
+        List<byte> message = new List<byte>();
         message.AddRange(BitConverter.GetBytes('c'));
         message.AddRange(BitConverter.GetBytes(colorR));
         message.AddRange(BitConverter.GetBytes(colorG));

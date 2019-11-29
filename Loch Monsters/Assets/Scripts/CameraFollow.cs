@@ -18,7 +18,7 @@ public class CameraFollow : MonoBehaviour
     IEnumerator GetPlayer()
     {
         yield return new WaitForFixedUpdate(); //Wait a fixed update cycle to make sure that all new objects can init
-        player = SnakeManager.instance.playerHeadTranform;
+        player = GameObject.FindGameObjectsWithTag("Player")[0].transform;
     }
 
 

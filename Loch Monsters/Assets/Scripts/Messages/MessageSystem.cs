@@ -1,29 +1,25 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
-
-public enum MessageType{
-    START_GAME,
-    SET_SNAKE_POSITION,
-    SET_PLAYER_POSITION,
-    UPDATE_POSITION,
-    EXIT_GAME,
-    CONNECT,
-    SPAWN_NON_PLAYER_SNAKE,
-    REQUEST_CLOCK_SYNC,
-    TERMINATION_MESSAGE,
-    NEW_FOOD,
-    ATE_FOOD,
-    FOOD_EATEN
-}
 
 public class MessageSystem : MonoBehaviour
 {
+    public static MessageSystem instance;
+
     Dictionary<MessageType, List<IMessageListener>> listeners;
 
     public void Awake()
     {
+        if(instance == null)
+        {
+            instance = this;
+        }
+        else
+        {
+            Destroy(this);
+        }
+
         listeners = new Dictionary<MessageType, List<IMessageListener>>();
+        DontDestroyOnLoad(this.gameObject);
     }
 
     public void Subscribe(MessageType type, IMessageListener listener)
@@ -61,6 +57,4 @@ public class MessageSystem : MonoBehaviour
         }
         
     }
-
-
 }

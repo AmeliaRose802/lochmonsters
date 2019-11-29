@@ -3,16 +3,19 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class StartMessage : IMessage
+public class StartGame : IMessage
 {
     public int id;
+    public string playerName;
+    public Color playerColor;
+
     public Vector2 startPos;
     public Vector2 startDir;
     public List<SnakeData> otherSnakes;
     public List<FoodData> foodInGame;
 
 
-    public StartMessage(int x, int y)
+    public StartGame(string name, Color color, int x, int y)
     {
         otherSnakes = new List<SnakeData>();
         foodInGame = new List<FoodData>();
@@ -20,8 +23,10 @@ public class StartMessage : IMessage
         startDir = new Vector2(0, 0);
     }
 
-    public StartMessage(byte [] message, long latency)
+    public StartGame(string playerName, Color playerColor, byte [] message, long latency)
     {
+        this.playerName = playerName;
+        this.playerColor = playerColor;
         otherSnakes = new List<SnakeData>();
         foodInGame = new List<FoodData>();
         int index = 0;
