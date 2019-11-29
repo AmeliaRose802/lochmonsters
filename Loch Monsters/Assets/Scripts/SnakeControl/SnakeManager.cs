@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class SnakeManager : MonoBehaviour, IMessageListener
 {
@@ -95,16 +96,18 @@ public class SnakeManager : MonoBehaviour, IMessageListener
 
     void SpawnSnake(SnakeData snake)
     {
-        Debug.Log("Got message to spawn snake " + snake.name);
-
         GameObject container = Instantiate(new GameObject());
         container.name = "NP Snake "+snake.name;
+        Debug.Log("Spawining snake: " + snake.name);
         GameObject newHead = Instantiate(nonPlayerHead, container.transform);
 
         //Non player snakes follow their targets for lerping reasons
         Transform target = newHead.transform.GetChild(0);
 
         NPSnakeHead snakeHeadManager = newHead.GetComponent<NPSnakeHead>();
+
+        Debug.Log(newHead.transform.GetChild(1).gameObject.GetComponentInChildren<Text>());
+        newHead.transform.GetChild(1).gameObject.GetComponentInChildren<Text>().text = snake.name;
 
         snakeHeadManager.snakeData = snake;
         //Set all nessary data for new snake
@@ -128,8 +131,7 @@ public class SnakeManager : MonoBehaviour, IMessageListener
     }
 
     void SpawnPlayer(CreatePlayer createPlayer)
-    {
-        
+    { 
         GameObject container = Instantiate(new GameObject());
         container.name = "Player";
         var head = Instantiate(playerHead, container.transform);

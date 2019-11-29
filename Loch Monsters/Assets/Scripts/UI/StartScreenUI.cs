@@ -50,7 +50,7 @@ public class StartScreenUI : MonoBehaviour, IMessageListener
         }
         else if (IPAddress.TryParse(serverIPInput.text, out address) && int.TryParse(serverPortInput.text, out port))
         {
-            MessageSystem.instance.DispatchMessage(new LaunchGame(serverIPInput.text, port, name, colorPicker.color));
+            MessageSystem.instance.DispatchMessage(new LaunchGame(serverIPInput.text, port, nameField.text, colorPicker.color));
         }
         else
         {
