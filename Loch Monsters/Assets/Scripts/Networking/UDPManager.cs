@@ -70,6 +70,10 @@ public class UDPManager: MonoBehaviour, IMessageListener
             Debug.Log("Something went wrong with the UDP socket "+ e);
             MessageSystem.instance.DispatchMessage(new EndGame());
         }
+        catch (Exception e)
+        {
+            Debug.Log(e);
+        }
         
     }
 

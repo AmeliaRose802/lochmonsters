@@ -9,7 +9,7 @@ public class SnakeManager : MonoBehaviour, IMessageListener
     public GameObject playerHead;
     public GameObject nonPlayerHead;
     public GameObject bodySegment;
-
+    public GameObject snakeKilledParticles;
     
 
     Dictionary<int, Transform> npTargets;
@@ -111,6 +111,8 @@ public class SnakeManager : MonoBehaviour, IMessageListener
         SnakeHead headScript = playerHeadTranform.gameObject.GetComponent<SnakeHead>();
 
         var newSegment = GetSegment(playerHeadTranform.parent);
+        newSegment.AddComponent(typeof(SegmentCollision));
+
         newSegment.transform.position = headScript.segments[headScript.segments.Count - 1].transform.position;
         newSegment.transform.rotation = headScript.segments[headScript.segments.Count - 1].transform.rotation;
         newSegment.GetComponent<SpriteRenderer>().color = headScript.playerColor;
@@ -120,7 +122,7 @@ public class SnakeManager : MonoBehaviour, IMessageListener
 
     void SpawnSnake(SnakeData snake)
     {
-        GameObject snakeContainer = GetNPSnake(snake.name);
+        GameObject snakeContainer = GetNPSnake(snake.name, snake.id);
 
         GameObject newHead = snakeContainer.transform.GetChild(0).gameObject;
 
@@ -172,12 +174,17 @@ public class SnakeManager : MonoBehaviour, IMessageListener
             segments.Clear();
 
             var deadHead = npTargets[message.id].parent.parent.gameObject;
+            var particles = Instantiate(snakeKilledParticles,deadHead.transform.GetChild(0).transform.position, deadHead.transform.GetChild(0).transform.rotation);
+            //Destroy(particles, 2);
+
             deadHead.SetActive(false);
             deadHead.transform.parent = deadSnakeParent.transform;
             deadNPSnakeHeads.Enqueue(deadHead);
 
             npTargets.Remove(message.id);
             lastUpdateTimes.Remove(message.id);
+
+            
         }
     }
 
@@ -198,6 +205,7 @@ public class SnakeManager : MonoBehaviour, IMessageListener
         for (int i = 0; i < GlobalConsts.DEFAULT_LENGTH -1; i++)
         {
             GameObject newSegment = Instantiate(bodySegment, container.transform);
+            newSegment.AddComponent(typeof(SegmentCollision));
             newSegment.GetComponent<SpriteRenderer>().color = snakeHeadManager.playerColor;
             snakeHeadManager.segments.Add(newSegment);
         }
@@ -222,8 +230,7 @@ public class SnakeManager : MonoBehaviour, IMessageListener
         return newSegment;
     }
 
-    
-    GameObject GetNPSnake(string name)
+    GameObject GetNPSnake(string name, int id)
     {
         GameObject container;
         if (deadNPSnakeHeads.Count <= 0)
@@ -241,7 +248,7 @@ public class SnakeManager : MonoBehaviour, IMessageListener
             container.transform.parent = snakesContainer;
         }
 
-        container.name = name;
+        container.name = id + " : "+name;
         container.tag = "otherPlayer";
 
         return container;

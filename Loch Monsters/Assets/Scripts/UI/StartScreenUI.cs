@@ -21,6 +21,11 @@ public class StartScreenUI : MonoBehaviour, IMessageListener
         nameField.text = new OrcNameGenerator().Generate(new System.Random());
     }
 
+    private void OnDestroy()
+    {
+        MessageSystem.instance.Unsubscribe(MessageType.CONNECT_FAILED, this);
+    }
+
     public void Receive(IMessage message)
     {
         switch (message.GetMessageType())
