@@ -26,7 +26,36 @@ public class CameraFollow : MonoBehaviour
     {
         if(player != null)
         {
-            transform.position = player.position + offset;
+            var newPos = player.position + offset;
+
+            var cam = gameObject.GetComponent<Camera>();
+            float halfHeight = cam.orthographicSize;
+
+            float halfWidth = halfHeight * cam.aspect;
+
+            if ((newPos.x + halfWidth) > GlobalConsts.FIELD_SIZE.x)
+            {
+                newPos.x = GlobalConsts.FIELD_SIZE.x - halfWidth + 1;
+            }
+
+            if ((newPos.x - halfWidth) < -GlobalConsts.FIELD_SIZE.x)
+            {
+                newPos.x = -GlobalConsts.FIELD_SIZE.x + halfWidth - 1;
+            }
+
+            if ((newPos.y + halfHeight) > GlobalConsts.FIELD_SIZE.y)
+            {
+                newPos.y = GlobalConsts.FIELD_SIZE.y - halfHeight;
+            }
+
+            if ((newPos.y - halfHeight) < -GlobalConsts.FIELD_SIZE.y)
+            {
+                newPos.y = -GlobalConsts.FIELD_SIZE.y + halfHeight;
+            }
+
+
+            transform.position = Vector3.Lerp(transform.position, newPos, Time.deltaTime * 40f);
+            //transform.position = newPos;
         }
     }
 }

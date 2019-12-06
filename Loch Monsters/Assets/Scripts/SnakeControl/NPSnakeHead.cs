@@ -15,7 +15,7 @@ public class NPSnakeHead : MonoBehaviour
     }
     void FixedUpdate()
     {
-        transform.position = Vector3.Lerp(transform.position, target.transform.position, Time.deltaTime);
+        transform.position = Vector3.Lerp(transform.position, target.transform.position, Time.deltaTime * 5);
         PositionTail();
     }
 

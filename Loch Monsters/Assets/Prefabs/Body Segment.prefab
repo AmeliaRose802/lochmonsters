@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 2570694965904755627}
   m_Layer: 0
   m_Name: Body Segment
-  m_TagString: otherPlayer
+  m_TagString: segment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

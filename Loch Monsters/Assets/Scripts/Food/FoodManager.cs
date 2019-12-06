@@ -37,7 +37,7 @@ public class FoodManager : MonoBehaviour, IMessageListener
                 break;
             case MessageType.ATE_FOOD:
                 PlayerAteFood ateMessage = (PlayerAteFood)message;
-                FoodEaten(ateMessage.foodID);
+                AteFood(ateMessage.foodID);
                 break;
         }
     }
@@ -68,6 +68,16 @@ public class FoodManager : MonoBehaviour, IMessageListener
             foodObjects[id].SetActive(false);
             deadFoodObjects.Enqueue(foodObjects[id]);
             foodObjects.Remove(id);
+        }
+    }
+
+    private void AteFood(int id)
+    {
+        if (foodObjects.ContainsKey(id))
+        {
+            foodObjects[id].SetActive(false);
+            deadFoodObjects.Enqueue(foodObjects[id]);
+            foodObjects.Remove(id);
 
             //Firing this from here bipasses the double trigger enter bug by verifying that the list contains the object before adding a segment
             MessageSystem.instance.DispatchMessage(new AddPlayerSegment());
@@ -76,12 +86,10 @@ public class FoodManager : MonoBehaviour, IMessageListener
 
     private void OnDestroy()
     {
-        print("Destroying food manager food objects: "+foodObjects.Count);
         MessageSystem.instance.Unsubscribe(MessageType.SPAWN_NEW_FOOD, this);
         MessageSystem.instance.Unsubscribe(MessageType.ATE_FOOD, this);
         MessageSystem.instance.Unsubscribe(MessageType.FOOD_EATEN, this);
         foodObjects.Clear();
-        print("Destroying food manager: "+foodObjects.Count);
     }
 
 }

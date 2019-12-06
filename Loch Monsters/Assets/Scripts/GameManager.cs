@@ -50,8 +50,7 @@ public class GameManager : MonoBehaviour, IMessageListener
     {
         if (updateClock)
         {
-            long epoch = (long)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalMilliseconds;
-            gameTime = epoch - startTime;
+            gameTime += (long)(Time.deltaTime * 1000f);
         }
     }
 
@@ -84,7 +83,10 @@ public class GameManager : MonoBehaviour, IMessageListener
             MessageSystem.instance.DispatchMessage(spawnMessage);
         }
 
+        
 
         gameRunning = true; //Now start doing all the game processes since things are inited
+
+        MessageSystem.instance.DispatchMessage(new GameRunning());
     }
 }

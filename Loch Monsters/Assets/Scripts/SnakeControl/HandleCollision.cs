@@ -17,6 +17,12 @@ public class HandleCollision : MonoBehaviour
             PlayerAteFood ateFood = new PlayerAteFood(id);
             MessageSystem.instance.DispatchMessage(ateFood);
         }
-        
+        if (collision.tag == "segment")
+        {
+            if (collision.gameObject.transform.parent.tag == "otherPlayer")
+            {
+                Debug.Log("Hit other player name: " + collision.gameObject.transform.parent.name);
+            }
+        }
     }
 }

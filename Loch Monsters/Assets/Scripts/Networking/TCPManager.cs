@@ -10,11 +10,14 @@ public class TCPManager : MonoBehaviour, IMessageListener
     Stopwatch stopWatch;
     TcpClient tcpClient;
 
+    TimeMessage activeTimeMessage;
+
     private void Start()
     {
         MessageSystem.instance.Subscribe(MessageType.ATE_FOOD, this);
         MessageSystem.instance.Subscribe(MessageType.END_GAME, this);
         MessageSystem.instance.Subscribe(MessageType.CONNECT_GAME, this);
+        MessageSystem.instance.Subscribe(MessageType.GAME_RUNNING, this);
     }
 
     private void FixedUpdate()
@@ -51,7 +54,15 @@ public class TCPManager : MonoBehaviour, IMessageListener
                         MessageSystem.instance.DispatchMessage(new SpawnFood(message));
                         break;
                     case 'a':
+                        print("Other ate food");
                         MessageSystem.instance.DispatchMessage(new OtherAteFood(message));
+                        break;
+                    case 'l':
+                        print("Other client left game");
+                        MessageSystem.instance.DispatchMessage(new KillSnake(message));
+                        break;
+                    case 't':
+                        activeTimeMessage.SetGameTime(message);
                         break;
                     default:
                         print("Unknown packet receved");
@@ -74,6 +85,9 @@ public class TCPManager : MonoBehaviour, IMessageListener
                 break;
             case MessageType.CONNECT_GAME:
                 EstablishConnection((LaunchGame)message);
+                break;
+            case MessageType.GAME_RUNNING:
+                StartCoroutine(SyncClock());
                 break;
             default:
                 print("Got something else");
@@ -204,6 +218,17 @@ public class TCPManager : MonoBehaviour, IMessageListener
             UnityEngine.Debug.Log("ERROR");
             UnityEngine.Debug.Log(e.ToString());
             MessageSystem.instance.DispatchMessage(new ConnectFailed(e.ToString()));
+        }
+    }
+
+    //TODO: Put this in its own class
+    IEnumerator SyncClock()
+    {
+        while (GameManager.instance.gameRunning)
+        {
+            activeTimeMessage = new TimeMessage();
+            SendTCP(activeTimeMessage);
+            yield return new WaitForSeconds(1);
         }
     }
 }

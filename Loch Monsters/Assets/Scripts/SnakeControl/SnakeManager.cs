@@ -10,8 +10,15 @@ public class SnakeManager : MonoBehaviour, IMessageListener
     public GameObject nonPlayerHead;
     public GameObject bodySegment;
 
+    
+
     Dictionary<int, Transform> npTargets;
     Dictionary<int, long> lastUpdateTimes;
+
+    Queue<GameObject> deadSnakeSegments;
+    Queue<GameObject> deadNPSnakeHeads;
+    Transform deadSnakeParent;
+    Transform snakesContainer;
 
     [HideInInspector]
     Transform playerHeadTranform;
@@ -20,13 +27,28 @@ public class SnakeManager : MonoBehaviour, IMessageListener
     {
 
         npTargets = new Dictionary<int, Transform>();
+        lastUpdateTimes = new Dictionary<int, long>();
 
+        deadSnakeSegments = new Queue<GameObject>();
+        deadNPSnakeHeads = new Queue<GameObject>();
+        
+    }
+
+    void Start()
+    {
         MessageSystem.instance.Subscribe(MessageType.CREATE_PLAYER, this);
         MessageSystem.instance.Subscribe(MessageType.SPAWN_NON_PLAYER_SNAKE, this);
         MessageSystem.instance.Subscribe(MessageType.UPDATE_NP_POSITION, this);
         MessageSystem.instance.Subscribe(MessageType.FOOD_EATEN, this);
         MessageSystem.instance.Subscribe(MessageType.ADD_PLAYER_SEGMENT, this);
-        lastUpdateTimes = new Dictionary<int, long>();
+        MessageSystem.instance.Subscribe(MessageType.KILL_SNAKE, this);
+        deadSnakeParent = new GameObject().transform;
+        deadSnakeParent.parent = gameObject.transform;
+        deadSnakeParent.gameObject.name = "Dead Stuff";
+
+        snakesContainer = new GameObject().transform;
+        snakesContainer.parent = gameObject.transform;
+        snakesContainer.gameObject.name = "Snakes";
     }
 
     void OnDestroy()
@@ -36,6 +58,7 @@ public class SnakeManager : MonoBehaviour, IMessageListener
         MessageSystem.instance.Unsubscribe(MessageType.UPDATE_NP_POSITION, this);
         MessageSystem.instance.Unsubscribe(MessageType.FOOD_EATEN, this);
         MessageSystem.instance.Unsubscribe(MessageType.ADD_PLAYER_SEGMENT, this);
+        MessageSystem.instance.Unsubscribe(MessageType.KILL_SNAKE, this);
         npTargets.Clear();
         lastUpdateTimes.Clear();
     }
@@ -50,7 +73,6 @@ public class SnakeManager : MonoBehaviour, IMessageListener
             case MessageType.SPAWN_NON_PLAYER_SNAKE:
                 SpawnSnake(((SpawnNPSnake)message).snake);
                 break;
-
             case MessageType.UPDATE_NP_POSITION:
                 UpdateNPSnakePosition((PositionUpdate)message);
                 break;
@@ -59,6 +81,9 @@ public class SnakeManager : MonoBehaviour, IMessageListener
                 break;
             case MessageType.ADD_PLAYER_SEGMENT:
                 AddPlayerSegment();
+                break;
+            case MessageType.KILL_SNAKE:
+                RemoveSnake((KillSnake)message);
                 break;
 
         }
@@ -73,7 +98,8 @@ public class SnakeManager : MonoBehaviour, IMessageListener
 
             NPSnakeHead snakeHeadScript = npSnake.GetComponent<NPSnakeHead>();
 
-            GameObject newSegment = Instantiate(bodySegment, npSnake.transform.parent);
+            GameObject newSegment = GetSegment(npSnake.transform.parent);
+
             newSegment.GetComponent<SpriteRenderer>().color = snakeHeadScript.snakeData.color;
 
             snakeHeadScript.segments.Add(newSegment);
@@ -82,31 +108,27 @@ public class SnakeManager : MonoBehaviour, IMessageListener
 
     void AddPlayerSegment()
     {
-
         SnakeHead headScript = playerHeadTranform.gameObject.GetComponent<SnakeHead>();
 
-        var newSegment = Instantiate(bodySegment, playerHeadTranform.parent);
+        var newSegment = GetSegment(playerHeadTranform.parent);
         newSegment.transform.position = headScript.segments[headScript.segments.Count - 1].transform.position;
         newSegment.transform.rotation = headScript.segments[headScript.segments.Count - 1].transform.rotation;
         newSegment.GetComponent<SpriteRenderer>().color = headScript.playerColor;
 
         headScript.segments.Add(newSegment);
-
     }
 
     void SpawnSnake(SnakeData snake)
     {
-        GameObject container = Instantiate(new GameObject());
-        container.name = "NP Snake "+snake.name;
-        Debug.Log("Spawining snake: " + snake.name);
-        GameObject newHead = Instantiate(nonPlayerHead, container.transform);
+        GameObject snakeContainer = GetNPSnake(snake.name);
+
+        GameObject newHead = snakeContainer.transform.GetChild(0).gameObject;
 
         //Non player snakes follow their targets for lerping reasons
         Transform target = newHead.transform.GetChild(0);
 
         NPSnakeHead snakeHeadManager = newHead.GetComponent<NPSnakeHead>();
 
-        Debug.Log(newHead.transform.GetChild(1).gameObject.GetComponentInChildren<Text>());
         newHead.transform.GetChild(1).gameObject.GetComponentInChildren<Text>().text = snake.name;
 
         snakeHeadManager.snakeData = snake;
@@ -121,7 +143,7 @@ public class SnakeManager : MonoBehaviour, IMessageListener
         //Spawn all body segments based on snake length
         for(int i = 0; i< snake.length - 1; i++)
         {
-            GameObject newSegment = Instantiate(bodySegment, container.transform);
+            GameObject newSegment = GetSegment(snakeContainer.transform);
             newSegment.GetComponent<SpriteRenderer>().color = snake.color;
             snakeHeadManager.segments.Add(newSegment);
         }
@@ -130,10 +152,40 @@ public class SnakeManager : MonoBehaviour, IMessageListener
         npTargets.Add(snake.id, target);
     }
 
+    void RemoveSnake(KillSnake message)
+    {
+        if(message.id == GameManager.instance.id)
+        {
+            Debug.Log("Got messae to kill self (NOT IMPLIMENTED)");
+        }
+        else if (ValidateNPID(message.id))
+        {
+            var segments = npTargets[message.id].parent.GetComponent<NPSnakeHead>().segments;
+
+            foreach(var segment in segments)
+            {
+                segment.gameObject.SetActive(false);
+                segment.transform.parent = deadSnakeParent.transform;
+                deadSnakeSegments.Enqueue(segment);
+            }
+
+            segments.Clear();
+
+            var deadHead = npTargets[message.id].parent.parent.gameObject;
+            deadHead.SetActive(false);
+            deadHead.transform.parent = deadSnakeParent.transform;
+            deadNPSnakeHeads.Enqueue(deadHead);
+
+            npTargets.Remove(message.id);
+            lastUpdateTimes.Remove(message.id);
+        }
+    }
+
     void SpawnPlayer(CreatePlayer createPlayer)
     { 
         GameObject container = Instantiate(new GameObject());
         container.name = "Player";
+        container.transform.parent = snakesContainer;
         var head = Instantiate(playerHead, container.transform);
         head.name = "PlayerHead";
         SnakeHead snakeHeadManager = head.GetComponent<SnakeHead>();
@@ -151,6 +203,48 @@ public class SnakeManager : MonoBehaviour, IMessageListener
         }
 
         playerHeadTranform = head.transform;
+    }
+
+    GameObject GetSegment(Transform parent)
+    {
+        GameObject newSegment;
+        if (deadSnakeSegments.Count <= 0)
+        {
+            newSegment = Instantiate(bodySegment, parent);
+        }
+        else
+        {
+            newSegment = deadSnakeSegments.Dequeue();
+            newSegment.transform.parent = parent;
+            newSegment.SetActive(true);
+        }
+
+        return newSegment;
+    }
+
+    
+    GameObject GetNPSnake(string name)
+    {
+        GameObject container;
+        if (deadNPSnakeHeads.Count <= 0)
+        {
+            container = Instantiate(new GameObject());
+            container.transform.parent = snakesContainer;
+            Instantiate(nonPlayerHead, container.transform);
+        }
+        else
+        {
+            Debug.Log("Canabolizing old segment from dead segments");
+            container = deadNPSnakeHeads.Dequeue();
+            container.SetActive(true);
+            
+            container.transform.parent = snakesContainer;
+        }
+
+        container.name = name;
+        container.tag = "otherPlayer";
+
+        return container;
     }
 
     /*
