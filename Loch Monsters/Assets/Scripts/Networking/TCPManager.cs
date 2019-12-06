@@ -15,6 +15,8 @@ public class TCPManager : MonoBehaviour, IMessageListener
     private void Start()
     {
         MessageSystem.instance.Subscribe(MessageType.ATE_FOOD, this);
+        MessageSystem.instance.Subscribe(MessageType.HIT_SNAKE, this);
+        MessageSystem.instance.Subscribe(MessageType.HIT_BY, this);
         MessageSystem.instance.Subscribe(MessageType.END_GAME, this);
         MessageSystem.instance.Subscribe(MessageType.CONNECT_GAME, this);
         MessageSystem.instance.Subscribe(MessageType.GAME_RUNNING, this);
@@ -54,11 +56,9 @@ public class TCPManager : MonoBehaviour, IMessageListener
                         MessageSystem.instance.DispatchMessage(new SpawnFood(message));
                         break;
                     case 'a':
-                        print("Other ate food");
                         MessageSystem.instance.DispatchMessage(new OtherAteFood(message));
                         break;
                     case 'l':
-                        print("Other client left game");
                         MessageSystem.instance.DispatchMessage(new KillSnake(message));
                         break;
                     case 't':
@@ -88,6 +88,13 @@ public class TCPManager : MonoBehaviour, IMessageListener
                 break;
             case MessageType.GAME_RUNNING:
                 StartCoroutine(SyncClock());
+                break;
+            case MessageType.HIT_SNAKE:
+                SendTCP((INetworkMessage)message);
+                break;
+            case MessageType.HIT_BY:
+                print("Got hit by message");
+                SendTCP((INetworkMessage)message);
                 break;
             default:
                 print("Got something else");

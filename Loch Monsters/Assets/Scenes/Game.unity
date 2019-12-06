@@ -1181,5 +1181,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1688169848568217187, guid: 2cfa56190e6a6ba4ab3a322ed5a2d9d2,
         type: 3}
+    - target: {fileID: 6600955882528046642, guid: 7c97474adec86834b89dfb71e560965c,
+        type: 3}
+      propertyPath: snakeKilledParticles
+      value: 
+      objectReference: {fileID: 117366, guid: d257af60087bd4dff9994939526697de, type: 3}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7c97474adec86834b89dfb71e560965c, type: 3}

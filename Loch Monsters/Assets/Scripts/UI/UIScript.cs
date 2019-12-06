@@ -15,6 +15,11 @@ public class UIScript : MonoBehaviour, IMessageListener
         MessageSystem.instance.Subscribe(MessageType.ADD_PLAYER_SEGMENT, this);
     }
 
+    private void OnDestroy()
+    {
+        MessageSystem.instance.Unsubscribe(MessageType.ADD_PLAYER_SEGMENT, this);
+    }
+
     public void Receive(IMessage message)
     {
         switch(message.GetMessageType())

@@ -13,7 +13,6 @@ public class OtherAteFood : IMessage
         foodID = BitConverter.ToInt32(buffer, index);
         index += 4;
         snakeID = BitConverter.ToInt32(buffer, index);
-        Debug.Log("Food: " + foodID + " eaten by " + snakeID);
     }
 
     public MessageType GetMessageType()

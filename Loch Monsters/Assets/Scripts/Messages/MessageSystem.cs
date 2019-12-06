@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class MessageSystem : MonoBehaviour
 {
@@ -54,7 +55,30 @@ public class MessageSystem : MonoBehaviour
             {
                 listener.Receive(message);
             }
+        } 
+    }
+
+    /*
+     * Objects must unsubscribe from the message system when they are destroyed otherwise pain and suffering
+     * Sometimes I forget so this will clean up any I missed
+     * */
+    public void CleanNull()
+    {
+        foreach(List<IMessageListener> list in listeners.Values)
+        {
+            foreach(IMessageListener listener in list)
+            {
+                if(listener == null)
+                {
+                    list.Remove(listener);
+                    Debug.Log("Found a very naughty object that did not clean up after itself");
+                }
+            }
         }
-        
+    }
+
+    private void ChangedActiveScene(Scene current, Scene next)
+    {
+        CleanNull();
     }
 }

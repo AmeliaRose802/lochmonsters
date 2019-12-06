@@ -19,7 +19,7 @@ public class GameManager : MonoBehaviour, IMessageListener
     {
         if(instance != null)
         {
-            Destroy(this);
+            Destroy(gameObject);
         }
         else
         {

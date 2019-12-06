@@ -97,8 +97,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c149b8c1acb9b1348bd0cee8a1ae7953, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 4
-  dist: 1
+  playerName: 
+  playerColor: {r: 0, g: 0, b: 0, a: 0}
   segments: []
 --- !u!50 &6693832472475940906
 Rigidbody2D:
