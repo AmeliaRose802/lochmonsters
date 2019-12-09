@@ -19,6 +19,21 @@ public class StartScreenUI : MonoBehaviour, IMessageListener
     {
         MessageSystem.instance.Subscribe(MessageType.CONNECT_FAILED, this);
         nameField.text = new OrcNameGenerator().Generate(new System.Random());
+        var newColor = new Color(UnityEngine.Random.Range(.1f, 1f), UnityEngine.Random.Range(.1f, 1f), UnityEngine.Random.Range(.1f, 1f));
+        colorPicker.startingColor = newColor;
+
+        //if any IP has been saved in player prefs put in in automatically. Players are likely to be reusing the same server. 
+        if (PlayerPrefs.HasKey("lastIP"))
+        {
+            serverIPInput.text = PlayerPrefs.GetString("lastIP");
+        }
+
+        if (PlayerPrefs.HasKey("lastPort"))
+        {
+            serverPortInput.text = PlayerPrefs.GetString("lastPort");
+        }
+
+
     }
 
     private void OnDestroy()
@@ -45,7 +60,6 @@ public class StartScreenUI : MonoBehaviour, IMessageListener
 
     public void StartClicked()
     {
-        var ip = "127.0.0.1";
         int port = 5555;
 
         if(nameField.text.Length == 0)
@@ -55,7 +69,10 @@ public class StartScreenUI : MonoBehaviour, IMessageListener
         }
         else if (IPAddress.TryParse(serverIPInput.text, out address) && int.TryParse(serverPortInput.text, out port))
         {
+            PlayerPrefs.SetString("lastIP", serverIPInput.text);
+            PlayerPrefs.SetString("lastPort", serverPortInput.text);
             MessageSystem.instance.DispatchMessage(new LaunchGame(serverIPInput.text, port, nameField.text, colorPicker.color));
+
         }
         else
         {

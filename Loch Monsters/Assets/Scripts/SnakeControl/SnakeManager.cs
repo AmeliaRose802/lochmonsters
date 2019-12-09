@@ -100,9 +100,12 @@ public class SnakeManager : MonoBehaviour, IMessageListener
 
             GameObject newSegment = GetSegment(npSnake.transform.parent);
 
-            newSegment.GetComponent<SpriteRenderer>().color = snakeHeadScript.snakeData.color;
-
+            var newColor = snakeHeadScript.snakeData.color;
+            newColor.a = GlobalConsts.SEGMENT_TRANSPARINCY;
+            newSegment.GetComponent<SpriteRenderer>().color = newColor;
+            newSegment.GetComponent<TrailRenderer>().colorGradient = GetGradient(snakeHeadScript.snakeData.color);
             snakeHeadScript.segments.Add(newSegment);
+            snakeHeadScript.Resize();
         }
     }
 
@@ -115,9 +118,16 @@ public class SnakeManager : MonoBehaviour, IMessageListener
 
         newSegment.transform.position = headScript.segments[headScript.segments.Count - 1].transform.position;
         newSegment.transform.rotation = headScript.segments[headScript.segments.Count - 1].transform.rotation;
-        newSegment.GetComponent<SpriteRenderer>().color = headScript.playerColor;
 
+        newSegment.GetComponent<TrailRenderer>().colorGradient = GetGradient(headScript.playerColor);
+
+        var newColor = headScript.playerColor;
+        newColor.a = GlobalConsts.SEGMENT_TRANSPARINCY;
+        newSegment.GetComponent<SpriteRenderer>().color = newColor;
+
+        
         headScript.segments.Add(newSegment);
+        headScript.Resize();
     }
 
     void SpawnSnake(SnakeData snake)
@@ -146,10 +156,15 @@ public class SnakeManager : MonoBehaviour, IMessageListener
         for(int i = 0; i< snake.length - 1; i++)
         {
             GameObject newSegment = GetSegment(snakeContainer.transform);
-            newSegment.GetComponent<SpriteRenderer>().color = snake.color;
+
+            var newColor = snake.color;
+            newColor.a = GlobalConsts.SEGMENT_TRANSPARINCY;
+            newSegment.GetComponent<SpriteRenderer>().color = newColor;
+            newSegment.GetComponent<TrailRenderer>().colorGradient = GetGradient(snake.color);
             snakeHeadManager.segments.Add(newSegment);
         }
 
+        snakeHeadManager.Resize();
         //Add the new snake created to the list of snakes
         npTargets.Add(snake.id, target);
     }
@@ -199,6 +214,11 @@ public class SnakeManager : MonoBehaviour, IMessageListener
         snakeHeadManager.playerColor = createPlayer.color;
         snakeHeadManager.name = createPlayer.name;
 
+        head.GetComponent<TrailRenderer>().colorGradient = GetGradient(snakeHeadManager.playerColor);
+        head.GetComponent<SpriteRenderer>().color = snakeHeadManager.playerColor;
+
+
+
         head.transform.position = createPlayer.pos;
         head.transform.up = createPlayer.der;
 
@@ -206,7 +226,10 @@ public class SnakeManager : MonoBehaviour, IMessageListener
         {
             GameObject newSegment = Instantiate(bodySegment, container.transform);
             newSegment.AddComponent(typeof(SegmentCollision));
-            newSegment.GetComponent<SpriteRenderer>().color = snakeHeadManager.playerColor;
+            newSegment.GetComponent<TrailRenderer>().colorGradient = GetGradient(snakeHeadManager.playerColor);
+            var newColor = snakeHeadManager.playerColor;
+            newColor.a = GlobalConsts.SEGMENT_TRANSPARINCY;
+            newSegment.GetComponent<SpriteRenderer>().color = newColor;
             snakeHeadManager.segments.Add(newSegment);
         }
 
@@ -241,7 +264,6 @@ public class SnakeManager : MonoBehaviour, IMessageListener
         }
         else
         {
-            Debug.Log("Canabolizing old segment from dead segments");
             container = deadNPSnakeHeads.Dequeue();
             container.SetActive(true);
             
@@ -314,5 +336,24 @@ public class SnakeManager : MonoBehaviour, IMessageListener
         }
 
         return isOk;
-    } 
+    }
+
+    Gradient GetGradient(Color color)
+    {
+        Gradient gradient = new Gradient();
+
+        // Populate the color keys at the relative time 0 and 1 (0 and 100%)
+        GradientColorKey[] colorKey = new GradientColorKey[1];
+        colorKey[0].color = color;
+        colorKey[0].time = 0.0f;
+
+        // Populate the alpha  keys at relative time 0 and 1  (0 and 100%)
+        GradientAlphaKey[] alphaKey = new GradientAlphaKey[1];
+        alphaKey[0].alpha = 1.0f;
+        alphaKey[0].time = 0.0f;
+
+        gradient.SetKeys(colorKey, alphaKey);
+
+        return gradient;
+    }
 }

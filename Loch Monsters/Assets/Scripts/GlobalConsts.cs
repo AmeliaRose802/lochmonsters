@@ -6,8 +6,9 @@ public static class GlobalConsts
     public const int DEFAULT_LENGTH = 3;
     public static Vector2 FIELD_SIZE = new Vector2(25, 25);
     public static float SNAKE_SPEED = 5;
-    public static float SEGMENT_DIST = 1;
-
+    public static float SEGMENT_DIST = .5f;
+    public static float SEGMENT_TRANSPARINCY = 1f;
+    public static float SCALE_STEP = .01f;
 
     public static Vector2 ClampToRange(Vector2 val, Vector2 range)
     {

@@ -104,8 +104,16 @@ public class TCPManager : MonoBehaviour, IMessageListener
 
     private void SendTCP(INetworkMessage message)
     {
-        var m = message.GetMessage();
-        tcpClient.GetStream().Write(message.GetMessage(), 0, m.Length);
+        try
+        {
+            var m = message.GetMessage();
+            tcpClient.GetStream().Write(message.GetMessage(), 0, m.Length);
+        }
+        catch(ObjectDisposedException e)
+        {
+            print(e);
+        }
+        
     }
 
     private void OnDestroy()
