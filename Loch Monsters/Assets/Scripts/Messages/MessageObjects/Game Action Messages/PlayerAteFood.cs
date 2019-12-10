@@ -6,12 +6,19 @@ using System;
 public class PlayerAteFood : INetworkMessage, IMessage
 {
     public int foodID;
+    MessageType type = MessageType.ATE_FOOD;
 
     public PlayerAteFood(int id)
     {
         foodID = id;
     }
-    
+
+    public PlayerAteFood(int id, MessageType type)
+    {
+        foodID = id;
+        this.type = type;
+    }
+
     public byte[] GetMessage()
     {
         List<byte> message = new List<byte>();
@@ -23,6 +30,6 @@ public class PlayerAteFood : INetworkMessage, IMessage
 
     public MessageType GetMessageType()
     {
-        return MessageType.ATE_FOOD;
+        return type;
     }
 }

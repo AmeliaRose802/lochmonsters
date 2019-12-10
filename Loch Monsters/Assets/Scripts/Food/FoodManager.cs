@@ -11,10 +11,13 @@ public class FoodManager : MonoBehaviour, IMessageListener
     Queue<GameObject> deadFoodObjects;
     Dictionary<int, GameObject> foodObjects;
 
+    List<int> needConfirm;
+
     private void Awake()
     {
         foodObjects = new Dictionary<int, GameObject>();
         deadFoodObjects = new Queue<GameObject>();
+        needConfirm = new List<int>();
     }
 
     private void Start()
@@ -22,6 +25,8 @@ public class FoodManager : MonoBehaviour, IMessageListener
         MessageSystem.instance.Subscribe(MessageType.SPAWN_NEW_FOOD, this);
         MessageSystem.instance.Subscribe(MessageType.ATE_FOOD, this);
         MessageSystem.instance.Subscribe(MessageType.FOOD_EATEN, this);
+
+        StartCoroutine(RetrySend());
     }
 
     public void Receive(IMessage message)
@@ -69,15 +74,23 @@ public class FoodManager : MonoBehaviour, IMessageListener
             deadFoodObjects.Enqueue(foodObjects[id]);
             foodObjects.Remove(id);
         }
+        if (needConfirm.Contains(id))
+        {
+            print("Got confirmation");
+            needConfirm.Remove(id);
+        }
+        
     }
 
     private void AteFood(int id)
     {
+
         if (foodObjects.ContainsKey(id))
         {
             foodObjects[id].SetActive(false);
             deadFoodObjects.Enqueue(foodObjects[id]);
             foodObjects.Remove(id);
+            needConfirm.Add(id);
 
             //Firing this from here bipasses the double trigger enter bug by verifying that the list contains the object before adding a segment
             MessageSystem.instance.DispatchMessage(new AddPlayerSegment());
@@ -90,6 +103,20 @@ public class FoodManager : MonoBehaviour, IMessageListener
         MessageSystem.instance.Unsubscribe(MessageType.ATE_FOOD, this);
         MessageSystem.instance.Unsubscribe(MessageType.FOOD_EATEN, this);
         foodObjects.Clear();
+    }
+
+    IEnumerator RetrySend()
+    {
+        yield return new WaitForFixedUpdate();
+
+        while (GameManager.instance.gameRunning)
+        {
+            yield return new WaitForSeconds(1);
+            foreach (int id in needConfirm)
+            {
+                MessageSystem.instance.DispatchMessage(new PlayerAteFood(id, MessageType.RETRY_ATE_FOOD));
+            }
+        }
     }
 
 }

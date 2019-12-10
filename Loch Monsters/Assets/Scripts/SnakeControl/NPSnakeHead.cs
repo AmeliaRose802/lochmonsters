@@ -19,7 +19,8 @@ public class NPSnakeHead : MonoBehaviour
     }
     void FixedUpdate()
     {
-        transform.position = Vector3.Lerp(transform.position, target.transform.position, Time.deltaTime * 2);
+        
+        transform.position = Vector3.MoveTowards(transform.position, target.transform.position, .1f);
         UpdateSegments();
     }
 

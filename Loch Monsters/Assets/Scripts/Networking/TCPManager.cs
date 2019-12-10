@@ -15,6 +15,7 @@ public class TCPManager : MonoBehaviour, IMessageListener
     private void Start()
     {
         MessageSystem.instance.Subscribe(MessageType.ATE_FOOD, this);
+        MessageSystem.instance.Subscribe(MessageType.RETRY_ATE_FOOD, this);
         MessageSystem.instance.Subscribe(MessageType.HIT_SNAKE, this);
         MessageSystem.instance.Subscribe(MessageType.HIT_BY, this);
         MessageSystem.instance.Subscribe(MessageType.END_GAME, this);
@@ -78,6 +79,11 @@ public class TCPManager : MonoBehaviour, IMessageListener
         switch (message.GetMessageType())
         {
             case MessageType.ATE_FOOD:
+                print("Sending message about eating food " + ((PlayerAteFood)message).foodID);
+                SendTCP((INetworkMessage)message);
+                break;
+            case MessageType.RETRY_ATE_FOOD:
+                print("Resending message about eating " + ((PlayerAteFood)message).foodID);
                 SendTCP((INetworkMessage)message);
                 break;
             case MessageType.END_GAME:
@@ -107,6 +113,7 @@ public class TCPManager : MonoBehaviour, IMessageListener
         try
         {
             var m = message.GetMessage();
+            
             tcpClient.GetStream().Write(message.GetMessage(), 0, m.Length);
         }
         catch(ObjectDisposedException e)
