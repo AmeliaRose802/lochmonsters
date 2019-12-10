@@ -34,44 +34,55 @@ public class TCPManager : MonoBehaviour, IMessageListener
     //Get tcp messages from the network
     private void ReceveTCP()
     {
-        if (tcpClient.Available > 0)
+        try
         {
-            byte [] message = new byte[512];
-
-            var data = tcpClient.GetStream().Read(message, 0, message.Length);
-
-            if (data != 0)
+            if (tcpClient.Available > 0)
             {
-                char type = BitConverter.ToChar(message, 0);
+                byte[] message = new byte[512];
 
-                //Trim off the part of the buffer containing the type so it is ready to be converted
-                var messageBody = new List<byte>(message);
-                message = messageBody.GetRange(2, messageBody.Count - 2).ToArray();
+                var data = tcpClient.GetStream().Read(message, 0, message.Length);
 
-                switch (type)
+                if (data != 0)
                 {
-                    case 'n':
-                        MessageSystem.instance.DispatchMessage(new SpawnNPSnake(message));
-                        break;
-                    case 'f':
-                        MessageSystem.instance.DispatchMessage(new SpawnFood(message));
-                        break;
-                    case 'a':
-                        MessageSystem.instance.DispatchMessage(new OtherAteFood(message));
-                        break;
-                    case 'l':
-                        MessageSystem.instance.DispatchMessage(new KillSnake(message));
-                        break;
-                    case 't':
-                        activeTimeMessage.SetGameTime(message);
-                        break;
-                    default:
-                        print("Unknown packet receved");
-                        break;
+                    char type = BitConverter.ToChar(message, 0);
+
+                    //Trim off the part of the buffer containing the type so it is ready to be converted
+                    var messageBody = new List<byte>(message);
+                    message = messageBody.GetRange(2, messageBody.Count - 2).ToArray();
+
+                    switch (type)
+                    {
+                        case 'n':
+                            MessageSystem.instance.DispatchMessage(new SpawnNPSnake(message));
+                            break;
+                        case 'f':
+                            MessageSystem.instance.DispatchMessage(new SpawnFood(message));
+                            break;
+                        case 'a':
+                            MessageSystem.instance.DispatchMessage(new OtherAteFood(message));
+                            break;
+                        case 'l':
+                            MessageSystem.instance.DispatchMessage(new KillSnake(message));
+                            break;
+                        case 't':
+                            activeTimeMessage.SetGameTime(message);
+                            break;
+                        default:
+                            print("Unknown packet receved");
+                            break;
+                    }
                 }
             }
         }
+        catch (Exception e)
+        {
+            MessageSystem.instance.DispatchMessage(new EndGame(EndType.END_SERVER_ERROR, MessageType.END_GAME, "Something went wrong sending TCP: " + e.ToString().Split(':')[1]));
+        }
+
+
+
     }
+
 
     //Get messages from the message system
     public void Receive(IMessage message)
@@ -79,11 +90,9 @@ public class TCPManager : MonoBehaviour, IMessageListener
         switch (message.GetMessageType())
         {
             case MessageType.ATE_FOOD:
-                print("Sending message about eating food " + ((PlayerAteFood)message).foodID);
                 SendTCP((INetworkMessage)message);
                 break;
             case MessageType.RETRY_ATE_FOOD:
-                print("Resending message about eating " + ((PlayerAteFood)message).foodID);
                 SendTCP((INetworkMessage)message);
                 break;
             case MessageType.END_GAME:
@@ -113,14 +122,24 @@ public class TCPManager : MonoBehaviour, IMessageListener
         try
         {
             var m = message.GetMessage();
-            
+
             tcpClient.GetStream().Write(message.GetMessage(), 0, m.Length);
         }
-        catch(ObjectDisposedException e)
+        catch (ObjectDisposedException e)
+        {
+            print(e);
+            MessageSystem.instance.DispatchMessage(new EndGame(EndType.END_SERVER_ERROR, MessageType.END_GAME, "Something went wrong sending TCP: " + e.ToString().Split(':')[1]));
+        }
+        catch (SocketException e)
+        {
+            print(e);
+            MessageSystem.instance.DispatchMessage(new EndGame(EndType.END_SERVER_ERROR, MessageType.END_GAME, "Something went wrong sending TCP: " + e.ToString().Split(':')[1]));
+        }
+        catch (Exception e)
         {
             print(e);
         }
-        
+
     }
 
     private void OnDestroy()
@@ -143,6 +162,7 @@ public class TCPManager : MonoBehaviour, IMessageListener
         try
         {
             tcpClient.GetStream().Write(BitConverter.GetBytes('e'), 0, 2);
+            print("Sending terminate connection message on TCP");
 
         }
         catch (Exception) { }
@@ -201,7 +221,7 @@ public class TCPManager : MonoBehaviour, IMessageListener
                 startMessage = new StartGame(launchMessage.playerName, launchMessage.playerColor, connectResponse, latency);
 
                 //Get number of other clients
-                
+
                 tcpStream.Read(shortNum, 0, shortNum.Length);
 
                 short numClients = BitConverter.ToInt16(shortNum, 0);
@@ -242,6 +262,7 @@ public class TCPManager : MonoBehaviour, IMessageListener
             MessageSystem.instance.DispatchMessage(new ConnectFailed(e.ToString()));
         }
     }
+
 
     //TODO: Put this in its own class
     IEnumerator SyncClock()

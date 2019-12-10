@@ -41,7 +41,7 @@ public class GameManager : MonoBehaviour, IMessageListener
                 StartCoroutine(StartGame((StartGame)message));
                 break;
             case MessageType.END_GAME:
-                ExitGame();
+                StartCoroutine(ExitGame((EndGame)message));
                 break;
         }
     }
@@ -54,11 +54,16 @@ public class GameManager : MonoBehaviour, IMessageListener
         }
     }
 
-    void ExitGame()
+    IEnumerator ExitGame(EndGame message)
     {
-        Debug.Log("Game no longer connected to the server");
         gameRunning = false;
-        SceneManager.LoadScene("MenuScene");
+        SceneManager.LoadScene("EndScene");
+
+        yield return new WaitUntil(() =>  SceneManager.GetActiveScene().name == "EndScene" );
+        yield return new WaitForFixedUpdate();
+
+        MessageSystem.instance.DispatchMessage(new EndGame(message.endType, MessageType.SETUP_END, message.message));
+
     }
 
     IEnumerator StartGame(StartGame startMessage)

@@ -9,6 +9,7 @@ public static class GlobalConsts
     public static float SEGMENT_DIST = .5f;
     public static float SEGMENT_TRANSPARINCY = 1f;
     public static float SCALE_STEP = .01f;
+    public static int MAX_SNAKE_LENGTH = 200;
 
     public static Vector2 ClampToRange(Vector2 val, Vector2 range)
     {

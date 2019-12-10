@@ -171,9 +171,13 @@ public class SnakeManager : MonoBehaviour, IMessageListener
 
     void RemoveSnake(KillSnake message)
     {
+        Debug.Log("killed id" + message.id + " my id "+ GameManager.instance.id);
         if(message.id == GameManager.instance.id)
         {
-            Debug.Log("Got messae to kill self (NOT IMPLIMENTED)");
+            Debug.Log("Sending you killed message");
+            GameManager.instance.gameRunning = false;
+            MessageSystem.instance.DispatchMessage(new EndGame(EndType.END_LOSE, MessageType.END_GAME, "You were killed"));
+
         }
         else if (ValidateNPID(message.id))
         {
@@ -316,6 +320,7 @@ public class SnakeManager : MonoBehaviour, IMessageListener
         {
             if (id == GameManager.instance.id)
             {
+
                 throw new Exception("Got message about self");
             }
             if (!npTargets.ContainsKey(id))
@@ -327,7 +332,6 @@ public class SnakeManager : MonoBehaviour, IMessageListener
         }
         catch (KeyNotFoundException e)
         {
-            Debug.Log("Snake with ID: " + id);
             print("ERROR " + e.ToString());
         }
         catch (Exception e)

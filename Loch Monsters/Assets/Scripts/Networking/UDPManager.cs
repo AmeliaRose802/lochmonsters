@@ -56,7 +56,7 @@ public class UDPManager: MonoBehaviour, IMessageListener
                             MessageSystem.instance.DispatchMessage(new PositionUpdate(data));
                             break;
                         case 'b':
-                            MessageSystem.instance.DispatchMessage(new EndGame());
+                            MessageSystem.instance.DispatchMessage(new EndGame(EndType.END_SERVER_ERROR, MessageType.END_GAME, "Server Terminated UDP Connection"));
                             break;
                         default:
                             Debug.Log("Unknown message receved");
@@ -68,7 +68,8 @@ public class UDPManager: MonoBehaviour, IMessageListener
         catch (SocketException e)
         {
             Debug.Log("Something went wrong with the UDP socket "+ e);
-            MessageSystem.instance.DispatchMessage(new EndGame());
+            string message = "UDP Connection Error: " + e.ErrorCode;
+            MessageSystem.instance.DispatchMessage(new EndGame(EndType.END_SERVER_ERROR, MessageType.END_GAME, message ));
         }
         catch (Exception e)
         {
@@ -119,6 +120,7 @@ public class UDPManager: MonoBehaviour, IMessageListener
         try
         {
             udpClient.Close();
+            print("Closing UDP connection");
         }
         catch (Exception) { };
     }

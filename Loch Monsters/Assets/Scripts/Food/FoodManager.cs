@@ -76,7 +76,6 @@ public class FoodManager : MonoBehaviour, IMessageListener
         }
         if (needConfirm.Contains(id))
         {
-            print("Got confirmation");
             needConfirm.Remove(id);
         }
         

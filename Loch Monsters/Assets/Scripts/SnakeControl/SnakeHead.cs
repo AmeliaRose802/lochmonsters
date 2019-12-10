@@ -46,10 +46,10 @@ public class SnakeHead : MonoBehaviour
         
 
 
-        if (segments.Count > 200)
+        if (segments.Count > GlobalConsts.MAX_SNAKE_LENGTH)
         {
             Debug.Log("You win!");
-            MessageSystem.instance.DispatchMessage(new EndGame());
+            MessageSystem.instance.DispatchMessage(new EndGame(EndType.END_WIN, MessageType.END_GAME, "Your snake is greater then " + GlobalConsts.MAX_SNAKE_LENGTH + " segments "));
         }
     }
 

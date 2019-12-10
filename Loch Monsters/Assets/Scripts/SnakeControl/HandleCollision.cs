@@ -27,7 +27,6 @@ public class HandleCollision : MonoBehaviour
             if (collision.gameObject.transform.parent.tag == "otherPlayer")
             {
                 int id = int.Parse(collision.gameObject.transform.parent.name.Split(':')[0].Trim());
-                Debug.Log("Hit other player name: " + collision.gameObject.transform.parent.name);
                 MessageSystem.instance.DispatchMessage(new HitSnake(id));
             }
         }
