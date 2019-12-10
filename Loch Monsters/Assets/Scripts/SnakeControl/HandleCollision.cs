@@ -4,15 +4,12 @@ using UnityEngine;
 
 public class HandleCollision : MonoBehaviour
 {
-    /*
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        
-    }*/
+    bool cantHitOtherSnake = false;
 
     private void OnTriggerEnter2D(Collider2D collision)
-    { 
-        if(collision.tag == "food")
+    {
+
+        if (collision.tag == "food")
         {
 
             string name = collision.gameObject.name;
@@ -26,6 +23,9 @@ public class HandleCollision : MonoBehaviour
         {
             if (collision.gameObject.transform.parent.tag == "otherPlayer")
             {
+                if (cantHitOtherSnake) return;
+                DisableColliderTemp();
+
                 int id = int.Parse(collision.gameObject.transform.parent.name.Split(':')[0].Trim());
                 MessageSystem.instance.DispatchMessage(new HitSnake(id));
             }
@@ -33,10 +33,18 @@ public class HandleCollision : MonoBehaviour
 
         if (collision.gameObject.tag == "otherPlayer")
         {
-            int id = int.Parse(collision.gameObject.transform.parent.name.Split(':')[0].Trim());
-            Debug.Log("Hit head of: " + collision.gameObject.transform.parent.name);
+            if (cantHitOtherSnake) return;
+            DisableColliderTemp();
 
+            int id = int.Parse(collision.gameObject.transform.parent.name.Split(':')[0].Trim());
             MessageSystem.instance.DispatchMessage(new HitSnake(id));
         }
+    }
+
+    IEnumerator DisableColliderTemp()
+    {
+        cantHitOtherSnake = true;
+        yield return new WaitForSeconds(.1f);
+        cantHitOtherSnake = false;
     }
 }

@@ -30,7 +30,7 @@ public class UDPManager: MonoBehaviour, IMessageListener
         TerminateConnection();
     }
 
-    private void FixedUpdate()
+    private void LateUpdate()
     {
         if (GameManager.instance.gameRunning)
         {
@@ -120,7 +120,6 @@ public class UDPManager: MonoBehaviour, IMessageListener
         try
         {
             udpClient.Close();
-            print("Closing UDP connection");
         }
         catch (Exception) { };
     }

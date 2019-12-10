@@ -38,6 +38,7 @@ public class StartGame : IMessage
         index += 4;
         long time = BitConverter.ToInt64(message, index);
         index += 8;
+        startPos = new Vector2(xPos, yPos);
         startDir = new Vector2(0, 0);
 
         //Logically this should be being sent in the start game message but that takes time and I don't want to get more out of date

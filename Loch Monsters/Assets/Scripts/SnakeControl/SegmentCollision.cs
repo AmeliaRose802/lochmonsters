@@ -14,7 +14,6 @@ public class SegmentCollision : MonoBehaviour
             //Prevent sibiling collsions from regestering
             if(id != GameManager.instance.id)
             {
-                Debug.Log("Was hit by head of : " + collision.gameObject.transform.parent.name);
                 MessageSystem.instance.DispatchMessage(new HitBySnake(id));
             }
             

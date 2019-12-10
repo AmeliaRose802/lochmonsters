@@ -23,7 +23,7 @@ public class TCPManager : MonoBehaviour, IMessageListener
         MessageSystem.instance.Subscribe(MessageType.GAME_RUNNING, this);
     }
 
-    private void FixedUpdate()
+    private void LateUpdate()
     {
         if (GameManager.instance.gameRunning)
         {
@@ -108,7 +108,6 @@ public class TCPManager : MonoBehaviour, IMessageListener
                 SendTCP((INetworkMessage)message);
                 break;
             case MessageType.HIT_BY:
-                print("Got hit by message");
                 SendTCP((INetworkMessage)message);
                 break;
             default:
@@ -128,12 +127,10 @@ public class TCPManager : MonoBehaviour, IMessageListener
         catch (ObjectDisposedException e)
         {
             print(e);
-            MessageSystem.instance.DispatchMessage(new EndGame(EndType.END_SERVER_ERROR, MessageType.END_GAME, "Something went wrong sending TCP: " + e.ToString().Split(':')[1]));
         }
         catch (SocketException e)
         {
             print(e);
-            MessageSystem.instance.DispatchMessage(new EndGame(EndType.END_SERVER_ERROR, MessageType.END_GAME, "Something went wrong sending TCP: " + e.ToString().Split(':')[1]));
         }
         catch (Exception e)
         {
@@ -162,8 +159,6 @@ public class TCPManager : MonoBehaviour, IMessageListener
         try
         {
             tcpClient.GetStream().Write(BitConverter.GetBytes('e'), 0, 2);
-            print("Sending terminate connection message on TCP");
-
         }
         catch (Exception) { }
 

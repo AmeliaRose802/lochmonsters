@@ -171,12 +171,10 @@ public class SnakeManager : MonoBehaviour, IMessageListener
 
     void RemoveSnake(KillSnake message)
     {
-        Debug.Log("killed id" + message.id + " my id "+ GameManager.instance.id);
         if(message.id == GameManager.instance.id)
         {
-            Debug.Log("Sending you killed message");
             GameManager.instance.gameRunning = false;
-            MessageSystem.instance.DispatchMessage(new EndGame(EndType.END_LOSE, MessageType.END_GAME, "You were killed"));
+            MessageSystem.instance.DispatchMessage(new EndGame(EndType.END_LOSE, MessageType.END_GAME, ""));
 
         }
         else if (ValidateNPID(message.id))
@@ -202,8 +200,6 @@ public class SnakeManager : MonoBehaviour, IMessageListener
 
             npTargets.Remove(message.id);
             lastUpdateTimes.Remove(message.id);
-
-            
         }
     }
 

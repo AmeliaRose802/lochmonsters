@@ -31,7 +31,7 @@ public class SnakeHead : MonoBehaviour
     void FixedUpdate()
     {
         //Only send update if direction has changed
-        if (transform.up != lastDir)
+        if (transform.up != lastDir && GameManager.instance.gameRunning)
         {
             MessageSystem.instance.DispatchMessage(new PositionUpdate(GameManager.instance.id, transform.position, transform.up, MessageType.SEND_PLAYER_POSITION));
             lastDir = transform.up;

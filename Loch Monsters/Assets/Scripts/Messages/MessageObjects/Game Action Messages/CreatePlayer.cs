@@ -9,6 +9,7 @@ public class CreatePlayer : IMessage
 
     public CreatePlayer(string name, Color color, Vector2 pos, Vector2 der)
     {
+        Debug.Log("In create player pos: " + pos);
         this.color = color;
         this.name = name;
         this.pos = pos;

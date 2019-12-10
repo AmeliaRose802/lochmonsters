@@ -30,11 +30,9 @@ public class EndUIScript : MonoBehaviour, IMessageListener
 
     public void Receive(IMessage message)
     {
-        Debug.Log("Receve called");
         switch (message.GetMessageType())
         {
             case MessageType.SETUP_END:
-                Debug.Log("Got setup end");
                 SetupEnd((EndGame)message);
             break;
         }
