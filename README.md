@@ -4,8 +4,11 @@ Loch monsters is a multiplayer snake game similar to slither.io. I built it as p
 
 #### Instructions
 Download the project
+
 Open in Unity 
+
 Build 
+
 Enter the server IP 
 
 
